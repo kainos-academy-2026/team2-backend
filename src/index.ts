@@ -4,8 +4,9 @@ const PORT = 3000;
 const app = express();
 app.use(express.json());
 
-app.get("/health", (req, res) => {
-    res.json({ status: "UP", timestamp: new Date().toISOString() });
+app.get("/health", (_req, res) => {
+    const status = "UP";
+    res.json({ status, timestamp: new Date().toISOString() });
 });
 
 app.listen(PORT, () => {
