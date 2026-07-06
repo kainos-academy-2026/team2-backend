@@ -1,21 +1,24 @@
 {
-  "name": "team2-backend",
-  "version": "1.0.0",
-  "description": "",
-  "type": "module",
-  "main": "dist/index.js",
-  "scripts": {
-    "build": "tsc",
-    "start": "node dist/index.js",
-    "dev": "tsx watch src/index.ts"
-  },
-  "dependencies": {
-    "express": "^5.2.1"
-  },
-  "devDependencies": {
-    "@types/express": "^5.0.6",
-    "@types/node": "^26.1.0",
-    "tsx": "^4.23.0",
-    "typescript": "^6.0.3"
-  }
+	"name": "team2-backend",
+	"version": "1.0.0",
+	"description": "",
+	"type": "module",
+	"main": "dist/index.js",
+	"scripts": {
+		"build": "tsc",
+		"start": "node dist/index.js",
+		"dev": "tsx watch src/index.ts",
+		"lint": "biome check .",
+		"lint:fix": "biome check --write ."
+	},
+	"dependencies": {
+		"express": "^5.2.1"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.5.2",
+		"@types/express": "^5.0.6",
+		"@types/node": "^26.1.0",
+		"tsx": "^4.23.0",
+		"typescript": "^6.0.3"
+	}
 }
