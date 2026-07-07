@@ -13,7 +13,7 @@ This repository currently contains the API application.
 Create a `.env` file in the repository root:
 
 ```bash
-PORT=3000
+PORT=3001
 DATABASE_URL="postgresql://<db_user>:<db_password>@localhost:5432/jobs_db"
 ```
 
@@ -122,12 +122,28 @@ Open Prisma Studio:
 npx prisma studio
 ```
 
+### Database Seeding
+
+Populate the database with starter data:
+
+```bash
+npx prisma db seed
+```
+
+If you reset the database, run seed again after migrations:
+
+```bash
+npx prisma migrate reset
+npx prisma db seed
+```
+
 ### Typical Local Startup Flow
 
 ```bash
 docker compose up -d
 npm install
 npx prisma migrate dev --name init
+npx prisma db seed
 npm run dev
 ```
 
@@ -136,5 +152,5 @@ npm run dev
 When the API is running, verify:
 
 ```bash
-curl http://localhost:3000/health
+curl http://localhost:3001/health
 ```
