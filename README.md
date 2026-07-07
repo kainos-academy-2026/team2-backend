@@ -68,21 +68,3 @@ npx prisma migrate dev --name <migration_name>
 npx prisma migrate status
 npx prisma migrate reset
 ```
-
-## UI Application
-
-The UI application is not part of this repository.
-
-If your UI lives in a separate folder/repository, open that project and run its scripts from that directory. Typical scripts are:
-
-```bash
-npm run dev
-npm run build
-npm run test
-npm run test:ui
-npm run test:coverage
-npm run lint
-npm run lint:fix
-```
-
-Check the UI package.json to confirm the exact script names.
