@@ -10,12 +10,15 @@
     "dev": "tsx watch src/index.ts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "lint": "biome check .",
+		"lint:fix": "biome check --write ."
   },
   "dependencies": {
     "express": "^5.2.1"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.5.2",
     "@types/express": "^5.0.6",
     "@types/node": "^26.1.0",
     "@types/supertest": "^7.2.0",
