@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient, JobRoleStatus } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 if (!process.env.DATABASE_URL) {
     throw new Error("DATABASE_URL is not set");
 }
@@ -43,7 +43,7 @@ async function main() {
                 capabilityId: engineering.capabilityId,
                 bandId: band2.nameId,
                 closingDate: new Date("2026-08-15T00:00:00.000Z"),
-                status: JobRoleStatus.OPEN,
+                status: "OPEN",
             },
             {
                 roleName: "Platform Engineer",
@@ -51,7 +51,7 @@ async function main() {
                 capabilityId: engineering.capabilityId,
                 bandId: band3.nameId,
                 closingDate: new Date("2026-09-01T00:00:00.000Z"),
-                status: JobRoleStatus.OPEN,
+                status: "OPEN",
             },
             {
                 roleName: "Business Analyst",
@@ -59,7 +59,7 @@ async function main() {
                 capabilityId: consulting.capabilityId,
                 bandId: band2.nameId,
                 closingDate: new Date("2026-07-01T00:00:00.000Z"),
-                status: JobRoleStatus.CLOSED,
+                status: "CLOSED",
             },
         ],
         skipDuplicates: true,

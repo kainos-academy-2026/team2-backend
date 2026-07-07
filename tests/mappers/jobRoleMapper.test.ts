@@ -13,7 +13,8 @@ describe("JobRoleMapper.toResponse", () => {
 			band: { nameId: 44, bandName: "Band 3" },
 		});
 
-		const result = JobRoleMapper.toResponse(jobRole);
+		const mapper = new JobRoleMapper();
+		const result = mapper.toResponse(jobRole);
 
 		expect(result).toEqual({
 			roleName: "QA Engineer",

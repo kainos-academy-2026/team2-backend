@@ -1,4 +1,3 @@
-import type { JobRoleStatus } from "@prisma/client";
 
 export interface JobRole {
 	jobRoleId: number;
@@ -7,7 +6,7 @@ export interface JobRole {
 	capabilityId: number;
 	bandId: number;
 	closingDate: Date;
-	status: JobRoleStatus;
+	status: string;
 	capability: {
 		capabilityId: number;
 		capabilityName: string;

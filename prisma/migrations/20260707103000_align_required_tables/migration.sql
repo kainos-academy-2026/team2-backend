@@ -3,16 +3,6 @@
 -- Remove legacy table from initial scaffold.
 DROP TABLE IF EXISTS "JobRole" CASCADE;
 
--- Keep enum in known state.
-DO $$
-BEGIN
-  IF EXISTS (SELECT 1 FROM pg_type WHERE typname = 'JobRoleStatus') THEN
-    DROP TYPE "JobRoleStatus";
-  END IF;
-END $$;
-
-CREATE TYPE "JobRoleStatus" AS ENUM ('OPEN', 'CLOSED');
-
 CREATE TABLE "capability" (
   "capabilityId" SERIAL NOT NULL,
   "capabilityName" TEXT NOT NULL,
@@ -32,7 +22,7 @@ CREATE TABLE "job-roles" (
   "capabilityId" INTEGER NOT NULL,
   "bandId" INTEGER NOT NULL,
   "closingDate" TIMESTAMP(3) NOT NULL,
-  "status" "JobRoleStatus" NOT NULL DEFAULT 'OPEN',
+  "status" TEXT NOT NULL DEFAULT 'OPEN',
   CONSTRAINT "job-roles_pkey" PRIMARY KEY ("jobRoleId")
 );
 

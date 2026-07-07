@@ -30,27 +30,20 @@ describe("JobRoleController.getAll", () => {
 
 	it("returns 200 and mapped job roles", async () => {
 		const rows = [
-			makeJobRole({
+			{
 				roleName: "Backend Engineer",
 				location: "Cork",
-				capability: { capabilityId: 1, capabilityName: "Engineering" },
-				band: { nameId: 1, bandName: "Band 1" },
-			}),
+				capability: "Engineering",
+				band: "Band 1",
+				closingDate: makeJobRole().closingDate,
+			},
 		];
 		mockFindAllOpen.mockResolvedValue(rows);
 
 		await controller.getAll(req, res);
 
 		expect(mockStatus).toHaveBeenCalledWith(200);
-		expect(mockJson).toHaveBeenCalledWith([
-			{
-				roleName: "Backend Engineer",
-				location: "Cork",
-				capability: "Engineering",
-				band: "Band 1",
-				closingDate: rows[0]?.closingDate,
-			},
-		]);
+		expect(mockJson).toHaveBeenCalledWith(rows);
 	});
 
 	it("returns 200 and an empty array when no roles exist", async () => {

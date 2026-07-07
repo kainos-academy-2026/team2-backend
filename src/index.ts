@@ -1,7 +1,7 @@
 import express from "express";
 import jobRoleRouter from "./routes/jobRoleRouter.js";
 
-const PORT = process.env["PORT"];
+const PORT = process.env["PORT"] || 3001;
 
 const app = express();
 app.use(express.json());

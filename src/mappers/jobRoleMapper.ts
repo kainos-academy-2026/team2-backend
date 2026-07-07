@@ -2,7 +2,7 @@ import type { JobRole } from "../models/jobRole.js";
 import type { JobRoleResponseDto } from "../dtos/jobRoleResponseDto.js";
 
 export class JobRoleMapper {
-  static toResponse(jobRole: JobRole): JobRoleResponseDto {
+  toResponse(jobRole: JobRole): JobRoleResponseDto {
     return {
       roleName: jobRole.roleName,
       location: jobRole.location,
