@@ -1,7 +1,6 @@
 import express from "express";
 import request from "supertest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { makeJobRole } from "../fixtures/jobRoleFixtures.js";
 
 const mockFindAllOpen = vi.fn();
 
@@ -28,11 +27,13 @@ describe("GET /job-roles", () => {
 
 	it("returns 200 with mapped role DTOs", async () => {
 		const roles = [
-			makeJobRole({
+			{
 				roleName: "Platform Engineer",
-				capability: { capabilityId: 1, capabilityName: "Engineering" },
-				band: { nameId: 2, bandName: "Band 2" },
-			}),
+				location: "Dublin",
+				capability: "Engineering",
+				band: "Band 2",
+				closingDate: new Date("2026-08-01T00:00:00.000Z"),
+			},
 		];
 		mockFindAllOpen.mockResolvedValue(roles);
 
