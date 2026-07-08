@@ -6,6 +6,17 @@ This repository currently contains the API application.
 
 - Node.js 20+
 - npm 10+
+- Docker Desktop (or Docker Engine + Docker Compose)
+
+## Environment Variables
+
+Create a `.env` file in the repository root:
+
+```bash
+PORT=3001
+DATABASE_URL="postgresql://<db_user>:<db_password>@localhost:5432/jobs_db"
+```
+
 
 ## API Application (this repository)
 
@@ -47,24 +58,99 @@ npm run lint:fix
 
 ### API Testing
 
-Unit test scripts are not configured in this repository yet.
-
-Planned/expected scripts once testing is added:
+Run all tests:
 
 ```bash
 npm run test
-npm run test:ui
+```
+
+Run tests in watch mode:
+
+```bash
+npm run test:watch
+```
+
+Run tests with coverage:
+
+```bash
 npm run test:coverage
+```
+
+### Docker (PostgreSQL)
+
+Start the local PostgreSQL container:
+
+```bash
+docker compose up -d
+```
+
+Stop containers:
+
+```bash
+docker compose down
+```
+
+Stop containers and remove the DB volume:
+
+```bash
+docker compose down -v
 ```
 
 ### API Migrations
 
-Database migration tooling is not configured in this repository yet (no Prisma configuration/scripts detected).
-
-If Prisma is added later, common migration commands are:
+Create and apply a new migration:
 
 ```bash
 npx prisma migrate dev --name <migration_name>
+```
+
+Check migration status:
+
+```bash
 npx prisma migrate status
+```
+
+Reset the development database and re-run migrations:
+
+```bash
 npx prisma migrate reset
+```
+
+Open Prisma Studio:
+
+```bash
+npx prisma studio
+```
+
+### Database Seeding
+
+Populate the database with starter data:
+
+```bash
+npx prisma db seed
+```
+
+If you reset the database, run seed again after migrations:
+
+```bash
+npx prisma migrate reset
+npx prisma db seed
+```
+
+### Typical Local Startup Flow
+
+```bash
+docker compose up -d
+npm install
+npx prisma migrate dev --name init
+npx prisma db seed
+npm run dev
+```
+
+### Health Check
+
+When the API is running, verify:
+
+```bash
+curl http://localhost:3001/health
 ```
