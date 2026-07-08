@@ -1,5 +1,6 @@
 import cors from "cors";
 import express from "express";
+import jobRoleRouter from "./routes/jobRoleRouter.js";
 import { registerRouter } from "./routes/register.js";
 
 export const app = express();
@@ -12,4 +13,5 @@ app.get("/health", (_req, res) => {
 	res.json({ status: "UP", timestamp: new Date().toISOString() });
 });
 
+app.use("/job-roles", jobRoleRouter);
 app.use(registerRouter);
