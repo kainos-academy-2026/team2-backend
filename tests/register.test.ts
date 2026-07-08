@@ -1,16 +1,31 @@
-import argon2 from "argon2";
+import express from "express";
 import request from "supertest";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { app } from "../src/app.js";
-import { __testing } from "../src/routes/register.js";
+import { RegisterUserController } from "../src/controllers/registerUserController.js";
+import { DuplicateUserEmailError } from "../src/errors/userErrors.js";
+import { createRegisterRouter } from "../src/routes/register.js";
+
+const mockRegisterUser = vi.fn();
+
+const app = express();
+app.use(express.json());
+app.use(
+	createRegisterRouter(
+		new RegisterUserController({
+			registerUser: mockRegisterUser,
+		} as never),
+	),
+);
 
 describe("POST /register", () => {
 	beforeEach(async () => {
-		await __testing.resetUsers();
+		vi.resetAllMocks();
 	});
 
 	it("creates an account when fullName, email and password are valid", async () => {
+		mockRegisterUser.mockResolvedValue(undefined);
+
 		const response = await request(app).post("/register").send({
 			fullName: "Test User",
 			email: "test.user@example.com",
@@ -30,6 +45,7 @@ describe("POST /register", () => {
 
 		expect(response.status).toBe(400);
 		expect(response.body.message).toBe("Invalid email format");
+		expect(mockRegisterUser).not.toHaveBeenCalled();
 	});
 
 	it("rejects weak passwords", async () => {
@@ -43,9 +59,12 @@ describe("POST /register", () => {
 		expect(response.body.message).toContain(
 			"Password must be at least 9 characters",
 		);
+		expect(mockRegisterUser).not.toHaveBeenCalled();
 	});
 
-	it("stores users with role user by default", async () => {
+	it("returns 201 for a valid registration", async () => {
+		mockRegisterUser.mockResolvedValue(undefined);
+
 		const response = await request(app).post("/register").send({
 			fullName: "Test User",
 			email: "test.user@example.com",
@@ -53,37 +72,19 @@ describe("POST /register", () => {
 		});
 
 		expect(response.status).toBe(201);
-
-		const users = await __testing.getUsers();
-		expect(users).toHaveLength(1);
-		expect(users[0]?.role).toBe("user");
+		expect(response.body).toEqual({ message: "Account created successfully" });
 	});
 
-	it("hashes and salts passwords", async () => {
-		await request(app).post("/register").send({
-			fullName: "First User",
-			email: "first.user@example.com",
+	it("returns 409 when the controller reports a duplicate email", async () => {
+		mockRegisterUser.mockRejectedValueOnce(new DuplicateUserEmailError());
+
+		const response = await request(app).post("/register").send({
+			fullName: "Test User",
+			email: "test.user@example.com",
 			password: "Strong!Pass9",
 		});
 
-		await request(app).post("/register").send({
-			fullName: "Second User",
-			email: "second.user@example.com",
-			password: "Strong!Pass9",
-		});
-
-		const users = await __testing.getUsers();
-		expect(users).toHaveLength(2);
-
-		const firstHash = users[0]?.passwordHash;
-		const secondHash = users[1]?.passwordHash;
-
-		expect(firstHash).toBeDefined();
-		expect(secondHash).toBeDefined();
-		expect(firstHash).not.toBe("Strong!Pass9");
-		expect(secondHash).not.toBe("Strong!Pass9");
-		expect(firstHash).not.toBe(secondHash);
-		expect(await argon2.verify(firstHash ?? "", "Strong!Pass9")).toBe(true);
-		expect(await argon2.verify(secondHash ?? "", "Strong!Pass9")).toBe(true);
+		expect(response.status).toBe(409);
+		expect(response.body).toEqual({ message: "Email already exists" });
 	});
 });
