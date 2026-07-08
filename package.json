@@ -8,9 +8,9 @@
 		"build": "tsc",
 		"start": "node dist/index.js",
 		"dev": "tsx watch src/index.ts",
-		"test": "prisma migrate deploy && vitest run",
-		"test:watch": "prisma migrate deploy && vitest",
-		"test:coverage": "prisma migrate deploy && vitest run --coverage",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"test:coverage": "vitest run --coverage",
 		"lint": "biome check .",
 		"lint:fix": "biome check --write ."
 	},
