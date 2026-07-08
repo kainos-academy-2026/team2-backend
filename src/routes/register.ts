@@ -24,28 +24,39 @@ export const __testing = {
 registerRouter.post("/register", async (req: Request, res: Response) => {
 	const { fullName, email, password } = req.body;
 
-	if (!fullName || !email || !password) {
+	if (
+		typeof fullName !== "string" ||
+		typeof email !== "string" ||
+		typeof password !== "string"
+	) {
 		res
 			.status(400)
 			.json({ message: "fullName, email, and password are required" });
 		return;
 	}
 
-	if (typeof email !== "string" || !isValidEmail(email)) {
+	const trimmedFullName = fullName.trim();
+	const normalizedEmail = normalizeEmail(email);
+
+	if (!trimmedFullName || !normalizedEmail || !password) {
+		res
+			.status(400)
+			.json({ message: "fullName, email, and password are required" });
+		return;
+	}
+
+	if (!isValidEmail(normalizedEmail)) {
 		res.status(400).json({ message: "Invalid email format" });
 		return;
 	}
 
-	if (typeof password !== "string" || !isValidPassword(password)) {
+	if (!isValidPassword(password)) {
 		res.status(400).json({
 			message:
 				"Password must be at least 9 characters and include uppercase, lowercase, and a special character",
 		});
 		return;
 	}
-
-	const normalizedEmail = normalizeEmail(email);
-
 	const existingUser = await prisma.user.findUnique({
 		where: { email: normalizedEmail },
 	});
@@ -56,13 +67,26 @@ registerRouter.post("/register", async (req: Request, res: Response) => {
 
 	const passwordHash = await argon2.hash(password);
 
-	await prisma.user.create({
-		data: {
-			fullName,
-			email: normalizedEmail,
-			passwordHash,
-		},
-	});
+	try {
+		await prisma.user.create({
+			data: {
+				fullName: trimmedFullName,
+				email: normalizedEmail,
+				passwordHash,
+			},
+		});
+	} catch (err: unknown) {
+		if (
+			typeof err === "object" &&
+			err !== null &&
+			"code" in err &&
+			(err as { code?: string }).code === "P2002"
+		) {
+			res.status(409).json({ message: "Email already exists" });
+			return;
+		}
+		throw err;
+	}
 
 	res.status(201).json({ message: "Account created successfully" });
 });
