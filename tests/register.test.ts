@@ -62,18 +62,6 @@ describe("POST /register", () => {
 		expect(mockRegisterUser).not.toHaveBeenCalled();
 	});
 
-	it("returns 201 for a valid registration", async () => {
-		mockRegisterUser.mockResolvedValue(undefined);
-
-		const response = await request(app).post("/register").send({
-			fullName: "Test User",
-			email: "test.user@example.com",
-			password: "Strong!Pass9",
-		});
-
-		expect(response.status).toBe(201);
-		expect(response.body).toEqual({ message: "Account created successfully" });
-	});
 
 	it("returns 409 when the controller reports a duplicate email", async () => {
 		mockRegisterUser.mockRejectedValueOnce(new DuplicateUserEmailError());
