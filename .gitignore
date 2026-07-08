@@ -1,2 +1,7 @@
 /dist
 /node_modules
+/src/generated/prisma
+.env
+seed.d.ts
+seed.d.ts.map
+seed.js.map
