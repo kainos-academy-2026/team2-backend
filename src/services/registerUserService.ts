@@ -1,16 +1,9 @@
 import argon2 from "argon2";
 import { DuplicateUserEmailError } from "../errors/userErrors.js";
-import type { CreateUserInput, UserDao } from "../daos/userDao.js";
-
-export interface PasswordHasher {
-	hash(password: string): Promise<string>;
-}
-
-export interface RegisterUserInput {
-	fullName: string;
-	email: string;
-	password: string;
-}
+import type { CreateUserInput } from "../interfaces/createUserInput.js";
+import type { PasswordHasher } from "../interfaces/passwordHasher.js";
+import type { RegisterUserInput } from "../interfaces/registerUserInput.js";
+import type { UserDao } from "../daos/userDao.js";
 
 const isUniqueConstraintError = (error: unknown): boolean => {
 	return (
@@ -28,12 +21,6 @@ export class RegisterUserService {
 	) {}
 
 	async registerUser(input: RegisterUserInput): Promise<void> {
-		const existingUser = await this.userDao.findByEmail(input.email);
-
-		if (existingUser) {
-			throw new DuplicateUserEmailError();
-		}
-
 		const passwordHash = await this.passwordHasher.hash(input.password);
 
 		const userToCreate: CreateUserInput = {

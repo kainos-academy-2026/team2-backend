@@ -1,44 +1,10 @@
 import type { Request, Response } from "express";
-import { z } from "zod";
 import { DuplicateUserEmailError } from "../errors/userErrors.js";
 import type { RegisterUserService } from "../services/registerUserService.js";
-
-const PASSWORD_POLICY_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{9,}$/;
-
-const registerUserSchema = z.object({
-	fullName: z.string().trim().min(1),
-	email: z.string().trim().toLowerCase().email("Invalid email format"),
-	password: z
-		.string()
-		.min(
-			9,
-			"Password must be at least 9 characters and include uppercase, lowercase, and a special character",
-		)
-		.regex(
-			PASSWORD_POLICY_REGEX,
-			"Password must be at least 9 characters and include uppercase, lowercase, and a special character",
-		),
-});
-
-const requiredMessage = "fullName, email, and password are required";
-
-const getValidationMessage = (error: z.ZodError): string => {
-	const issue = error.issues[0];
-
-	if (!issue) {
-		return requiredMessage;
-	}
-
-	if (issue.path[0] === "email" && issue.code === "invalid_format") {
-		return "Invalid email format";
-	}
-
-	if (issue.path[0] === "password") {
-		return "Password must be at least 9 characters and include uppercase, lowercase, and a special character";
-	}
-
-	return requiredMessage;
-};
+import {
+	getRegisterUserValidationMessage,
+	registerUserSchema,
+} from "../validators/registerUserValidator.js";
 
 export class RegisterUserController {
 	constructor(private readonly registerUserService: RegisterUserService) {}
@@ -47,7 +13,9 @@ export class RegisterUserController {
 		const parsedRequest = registerUserSchema.safeParse(req.body ?? {});
 
 		if (!parsedRequest.success) {
-			res.status(400).json({ message: getValidationMessage(parsedRequest.error) });
+			res
+				.status(400)
+				.json({ message: getRegisterUserValidationMessage(parsedRequest.error) });
 			return;
 		}
 

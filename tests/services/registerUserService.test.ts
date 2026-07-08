@@ -4,7 +4,6 @@ import { RegisterUserService } from "../../src/services/registerUserService.js";
 import type { UserDao } from "../../src/daos/userDao.js";
 
 describe("RegisterUserService.registerUser", () => {
-	const mockFindByEmail = vi.fn();
 	const mockCreateUser = vi.fn();
 	const mockHash = vi.fn();
 	let service: RegisterUserService;
@@ -12,7 +11,6 @@ describe("RegisterUserService.registerUser", () => {
 	beforeEach(() => {
 		vi.resetAllMocks();
 		const mockUserDao = {
-			findByEmail: mockFindByEmail,
 			createUser: mockCreateUser,
 		} as unknown as UserDao;
 
@@ -20,7 +18,6 @@ describe("RegisterUserService.registerUser", () => {
 	});
 
 	it("creates a user with a hashed password", async () => {
-		mockFindByEmail.mockResolvedValue(null);
 		mockHash.mockResolvedValue("hashed-password");
 		mockCreateUser.mockResolvedValue({});
 
@@ -30,7 +27,6 @@ describe("RegisterUserService.registerUser", () => {
 			password: "Strong!Pass9",
 		});
 
-		expect(mockFindByEmail).toHaveBeenCalledWith("test.user@example.com");
 		expect(mockHash).toHaveBeenCalledWith("Strong!Pass9");
 		expect(mockCreateUser).toHaveBeenCalledWith({
 			fullName: "Test User",
@@ -39,8 +35,9 @@ describe("RegisterUserService.registerUser", () => {
 		});
 	});
 
-	it("throws when the email already exists", async () => {
-		mockFindByEmail.mockResolvedValue({ id: 1 });
+	it("throws when the database reports a duplicate email", async () => {
+		mockHash.mockResolvedValue("hashed-password");
+		mockCreateUser.mockRejectedValue({ code: "P2002" });
 
 		await expect(
 			service.registerUser({
@@ -50,7 +47,11 @@ describe("RegisterUserService.registerUser", () => {
 			}),
 		).rejects.toBeInstanceOf(DuplicateUserEmailError);
 
-		expect(mockHash).not.toHaveBeenCalled();
-		expect(mockCreateUser).not.toHaveBeenCalled();
+		expect(mockHash).toHaveBeenCalledWith("Strong!Pass9");
+		expect(mockCreateUser).toHaveBeenCalledWith({
+			fullName: "Test User",
+			email: "test.user@example.com",
+			passwordHash: "hashed-password",
+		});
 	});
 });
