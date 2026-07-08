@@ -4,10 +4,17 @@ import express, {
 	type Request,
 	type Response,
 } from "express";
+import { RegisterUserController } from "./controllers/registerUserController.js";
+import { UserDao } from "./daos/userDao.js";
 import jobRoleRouter from "./routes/jobRoleRouter.js";
-import { registerRouter } from "./routes/register.js";
+import { createRegisterRouter } from "./routes/register.js";
+import { RegisterUserService } from "./services/registerUserService.js";
 
 export const app = express();
+
+const registerRouter = createRegisterRouter(
+	new RegisterUserController(new RegisterUserService(new UserDao())),
+);
 
 const corsOrigin = process.env.CORS_ORIGIN ?? "http://localhost:3001";
 app.use(cors({ origin: corsOrigin }));
