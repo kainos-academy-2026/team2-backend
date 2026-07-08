@@ -67,13 +67,26 @@ registerRouter.post("/register", async (req: Request, res: Response) => {
 
 	const passwordHash = await argon2.hash(password);
 
-	await prisma.user.create({
-		data: {
-			fullName,
-			email: normalizedEmail,
-			passwordHash,
-		},
-	});
+	try {
+		await prisma.user.create({
+			data: {
+				fullName: trimmedFullName,
+				email: normalizedEmail,
+				passwordHash,
+			},
+		});
+	} catch (err: unknown) {
+		if (
+			typeof err === "object" &&
+			err !== null &&
+			"code" in err &&
+			(err as { code?: string }).code === "P2002"
+		) {
+			res.status(409).json({ message: "Email already exists" });
+			return;
+		}
+		throw err;
+	}
 
 	res.status(201).json({ message: "Account created successfully" });
 });
