@@ -1,16 +1,32 @@
+
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
-model User {
-  id           Int      @id @default(autoincrement())
-  fullName     String
-  email        String   @unique
-  role         String   @default("user")
-  passwordHash String
-  createdAt    DateTime @default(now())
+model JobRole {
+  jobRoleId    Int           @id @default(autoincrement())
+  roleName     String
+  location     String
+  capabilityId Int
+  bandId       Int
+  closingDate  DateTime
+  status       String
+  capability   Capability    @relation(fields: [capabilityId], references: [capabilityId])
+  band         Band          @relation(fields: [bandId], references: [nameId])
+}
+
+model Capability {
+  capabilityId   Int       @id @default(autoincrement())
+  capabilityName String
+  jobRoles       JobRole[]
+}
+
+model Band {
+  nameId   Int       @id @default(autoincrement())
+  bandName String
+  jobRoles JobRole[]
 }
