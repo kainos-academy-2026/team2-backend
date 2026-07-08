@@ -15,11 +15,16 @@
 		"lint:fix": "biome check --write ."
 	},
 	"dependencies": {
+		"@prisma/adapter-better-sqlite3": "^7.8.0",
+		"@prisma/client": "^7.8.0",
+		"argon2": "^0.44.0",
 		"cors": "^2.8.6",
-		"express": "^5.2.1"
+		"express": "^5.2.1",
+		"prisma": "^7.8.0"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.5.2",
+		"@types/argon2": "^0.14.1",
 		"@types/cors": "^2.8.19",
 		"@types/express": "^5.0.6",
 		"@types/node": "^26.1.0",
