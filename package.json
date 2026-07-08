@@ -8,9 +8,9 @@
 		"build": "tsc",
 		"start": "node dist/index.js",
 		"dev": "tsx watch src/index.ts",
-		"test": "prisma db push --skip-generate && vitest run",
-		"test:watch": "prisma db push --skip-generate && vitest",
-		"test:coverage": "prisma db push --skip-generate && vitest run --coverage",
+		"test": "prisma db push --accept-data-loss && vitest run",
+		"test:watch": "prisma db push --accept-data-loss && vitest",
+		"test:coverage": "prisma db push --accept-data-loss && vitest run --coverage",
 		"lint": "biome check .",
 		"lint:fix": "biome check --write ."
 	},

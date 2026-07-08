@@ -2,7 +2,7 @@ import argon2 from "argon2";
 import { type Request, type Response, Router } from "express";
 import { prisma } from "../lib/prisma.js";
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/;
 const PASSWORD_POLICY_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{9,}$/;
 
 export const registerRouter = Router();
