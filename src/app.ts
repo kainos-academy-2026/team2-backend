@@ -1,5 +1,9 @@
 import cors from "cors";
-import express from "express";
+import express, {
+	type NextFunction,
+	type Request,
+	type Response,
+} from "express";
 import jobRoleRouter from "./routes/jobRoleRouter.js";
 import { registerRouter } from "./routes/register.js";
 
@@ -15,3 +19,7 @@ app.get("/health", (_req, res) => {
 
 app.use("/job-roles", jobRoleRouter);
 app.use(registerRouter);
+
+app.use((_err: Error, _req: Request, res: Response, _next: NextFunction) => {
+	res.status(500).json({ message: "Internal server error" });
+});
