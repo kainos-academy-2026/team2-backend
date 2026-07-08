@@ -22,7 +22,11 @@ export const __testing = {
 };
 
 registerRouter.post("/register", async (req: Request, res: Response) => {
-	const { fullName, email, password } = req.body;
+	const { fullName, email, password } = (req.body ?? {}) as {
+		fullName?: unknown;
+		email?: unknown;
+		password?: unknown;
+	};
 
 	if (
 		typeof fullName !== "string" ||
