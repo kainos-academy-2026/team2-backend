@@ -5,33 +5,15 @@ import express, {
 	type RequestHandler,
 	type Response,
 } from "express";
-import { RegisterUserController } from "./controllers/registerUserController.js";
-import { UserDao } from "./daos/userDao.js";
+import { validateBody } from "./middleware/validateBody.js";
 import jobRoleRouter from "./routes/jobRoleRouter.js";
-import { createRegisterRouter } from "./routes/register.js";
-import { RegisterUserService } from "./services/registerUserService.js";
+import registerRouter from "./routes/register.js";
 import { registerUserSchema } from "./validators/registerUserValidator.js";
 
 export const app = express();
 
-export const validateRegisterUser: RequestHandler = (req, res, next): void => {
-	const parsedRequest = registerUserSchema.safeParse(req.body ?? {});
+export const validateRegisterUser: RequestHandler = validateBody(registerUserSchema);
 
-	if (!parsedRequest.success) {
-		const firstIssue =
-			parsedRequest.error.issues[0]?.message ?? "Invalid request body";
-		res.status(400).json({ message: firstIssue });
-		return;
-	}
-
-	req.body = parsedRequest.data;
-	next();
-};
-
-const registerRouter = createRegisterRouter(
-	new RegisterUserController(new RegisterUserService(new UserDao())),
-	validateRegisterUser,
-);
 
 const corsOrigin = process.env.CORS_ORIGIN ?? "http://localhost:3001";
 app.use(cors({ origin: corsOrigin }));

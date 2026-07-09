@@ -17,8 +17,8 @@ export class RegisterUserController {
 
 			const message =
 				error instanceof Error ? error.message : "Unknown error value thrown";
-			res.status(500).json({ message: "Internal server error" });
 			console.error("Register user failed", { message, error });
+			res.status(500).json({ message: "Internal server error" });
 		}
 	};
 }

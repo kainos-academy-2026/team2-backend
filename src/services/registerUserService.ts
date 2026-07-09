@@ -1,7 +1,6 @@
 import { DuplicateUserEmailError } from "../errors/userErrors.js";
 import type { CreateUserInput } from "../interfaces/createUserInput.js";
 import type { PasswordHasher } from "../interfaces/passwordHasher.js";
-import type { RegisterUserInput } from "../interfaces/registerUserInput.js";
 import type { UserDao } from "../daos/userDao.js";
 import Argon2PasswordHashingService from "./argon2PasswordHashingService.js";
 

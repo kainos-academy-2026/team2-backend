@@ -1,17 +1,20 @@
 import { Router, type RequestHandler } from "express";
 import { RegisterUserController } from "../controllers/registerUserController.js";
+import { validateBody } from "../middleware/validateBody.js";
+import { registerUserSchema } from "../validators/registerUserValidator.js";
+import { UserDao } from "../daos/userDao.js";
+import { RegisterUserService } from "../services/registerUserService.js";
 
-export const createRegisterRouter = (
-	registerUserController: RegisterUserController,
-	validateRegisterUser: RequestHandler,
-): ReturnType<typeof Router> => {
-	const registerRouter = Router();
+const registerRouter = Router();
 
-	registerRouter.post(
-		"/register",
-		validateRegisterUser,
-		registerUserController.register,
-	);
+const userDao = new UserDao();
+const registerUserService = new RegisterUserService(userDao);
+const registerUserController = new RegisterUserController(registerUserService);
 
-	return registerRouter;
-};
+registerRouter.post(
+    "/",
+    validateBody(registerUserSchema),
+    registerUserController.register,
+);
+
+export default registerRouter;
