@@ -5,6 +5,7 @@ import type { UserDao } from "../../src/daos/userDao.js";
 
 describe("RegisterUserService.registerUser", () => {
 	const mockCreateUser = vi.fn();
+	const mockFindUserByEmail = vi.fn();
 	const mockHash = vi.fn();
 	let service: RegisterUserService;
 
@@ -12,12 +13,14 @@ describe("RegisterUserService.registerUser", () => {
 		vi.resetAllMocks();
 		const mockUserDao = {
 			createUser: mockCreateUser,
+			findUserByEmail: mockFindUserByEmail,
 		} as unknown as UserDao;
 
 		service = new RegisterUserService(mockUserDao, { hash: mockHash });
 	});
 
 	it("creates a user with a hashed password", async () => {
+		mockFindUserByEmail.mockResolvedValue(null);
 		mockHash.mockResolvedValue("hashed-password");
 		mockCreateUser.mockResolvedValue({});
 
@@ -32,12 +35,12 @@ describe("RegisterUserService.registerUser", () => {
 			fullName: "Test User",
 			email: "test.user@example.com",
 			passwordHash: "hashed-password",
+			role: "user",
 		});
 	});
 
-	it("throws when the database reports a duplicate email", async () => {
-		mockHash.mockResolvedValue("hashed-password");
-		mockCreateUser.mockRejectedValue({ code: "P2002" });
+	it("throws when a user with the same email already exists", async () => {
+		mockFindUserByEmail.mockResolvedValue({ email: "test.user@example.com" });
 
 		await expect(
 			service.registerUser({
@@ -47,11 +50,7 @@ describe("RegisterUserService.registerUser", () => {
 			}),
 		).rejects.toBeInstanceOf(DuplicateUserEmailError);
 
-		expect(mockHash).toHaveBeenCalledWith("Strong!Pass9");
-		expect(mockCreateUser).toHaveBeenCalledWith({
-			fullName: "Test User",
-			email: "test.user@example.com",
-			passwordHash: "hashed-password",
-		});
+		expect(mockHash).not.toHaveBeenCalled();
+		expect(mockCreateUser).not.toHaveBeenCalled();
 	});
 });

@@ -3,39 +3,28 @@ import type { CreateUserInput } from "../interfaces/createUserInput.js";
 import type { PasswordHasher } from "../interfaces/passwordHasher.js";
 import type { UserDao } from "../daos/userDao.js";
 import Argon2PasswordHashingService from "./argon2PasswordHashingService.js";
-
-const isUniqueConstraintError = (error: unknown): boolean => {
-	return (
-		typeof error === "object" &&
-		error !== null &&
-		"code" in error &&
-		(error as { code?: string }).code === "P2002"
-	);
-};
+import { Role } from "../models/user.js";
 
 export class RegisterUserService {
 	constructor(
 		private readonly userDao: UserDao,
-		private readonly passwordHasher: PasswordHasher = new Argon2PasswordHashingService(),
+		private readonly passwordHasher: PasswordHasher,
 	) {}
 
-	async registerUser(input: RegisterUserInput): Promise<void> {
+	async registerUser(input: CreateUserInput): Promise<void> {
+
+		const userExists = await this.userDao.findUserByEmail(input.email);
+		if (userExists) {
+			throw new DuplicateUserEmailError();
+		}
+
 		const passwordHash = await this.passwordHasher.hash(input.password);
 
-		const userToCreate: CreateUserInput = {
+		await this.userDao.createUser({
 			fullName: input.fullName,
 			email: input.email,
-			passwordHash,
-		};
-
-		try {
-			await this.userDao.createUser(userToCreate);
-		} catch (error: unknown) {
-			if (isUniqueConstraintError(error)) {
-				throw new DuplicateUserEmailError();
-			}
-
-			throw error;
-		}
+			passwordHash: passwordHash,
+			role: Role.User,
+		});
 	}
 }

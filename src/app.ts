@@ -12,9 +12,6 @@ import { registerUserSchema } from "./validators/registerUserValidator.js";
 
 export const app = express();
 
-export const validateRegisterUser: RequestHandler = validateBody(registerUserSchema);
-
-
 const corsOrigin = process.env.CORS_ORIGIN ?? "http://localhost:3001";
 app.use(cors({ origin: corsOrigin }));
 app.use(express.json());
