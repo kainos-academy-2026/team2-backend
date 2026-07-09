@@ -2,6 +2,7 @@ import express from "express";
 import request from "supertest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { validateRegisterUser } from "../src/app.js";
 import { RegisterUserController } from "../src/controllers/registerUserController.js";
 import { DuplicateUserEmailError } from "../src/errors/userErrors.js";
 import { createRegisterRouter } from "../src/routes/register.js";
@@ -15,6 +16,7 @@ app.use(
 		new RegisterUserController({
 			registerUser: mockRegisterUser,
 		} as never),
+		validateRegisterUser,
 	),
 );
 

@@ -1,9 +1,9 @@
-import argon2 from "argon2";
 import { DuplicateUserEmailError } from "../errors/userErrors.js";
 import type { CreateUserInput } from "../interfaces/createUserInput.js";
 import type { PasswordHasher } from "../interfaces/passwordHasher.js";
 import type { RegisterUserInput } from "../interfaces/registerUserInput.js";
 import type { UserDao } from "../daos/userDao.js";
+import Argon2PasswordHashingService from "./argon2PasswordHashingService.js";
 
 const isUniqueConstraintError = (error: unknown): boolean => {
 	return (
@@ -17,7 +17,7 @@ const isUniqueConstraintError = (error: unknown): boolean => {
 export class RegisterUserService {
 	constructor(
 		private readonly userDao: UserDao,
-		private readonly passwordHasher: PasswordHasher = argon2,
+		private readonly passwordHasher: PasswordHasher = new Argon2PasswordHashingService(),
 	) {}
 
 	async registerUser(input: RegisterUserInput): Promise<void> {

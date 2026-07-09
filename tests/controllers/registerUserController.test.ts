@@ -46,22 +46,6 @@ describe("RegisterUserController.register", () => {
 		expect(mockJson).toHaveBeenCalledWith({ message: "Account created successfully" });
 	});
 
-	it("returns 400 when the request body is invalid", async () => {
-		req = {
-			body: {
-				fullName: "Test User",
-				email: "not-an-email",
-				password: "Strong!Pass9",
-			},
-		} as Request;
-
-		await controller.register(req, res);
-
-		expect(mockRegisterUser).not.toHaveBeenCalled();
-		expect(mockStatus).toHaveBeenCalledWith(400);
-		expect(mockJson).toHaveBeenCalledWith({ message: "Invalid email format" });
-	});
-
 	it("returns 409 when the service reports a duplicate email", async () => {
 		mockRegisterUser.mockRejectedValue(new DuplicateUserEmailError());
 		req = {
@@ -76,5 +60,22 @@ describe("RegisterUserController.register", () => {
 
 		expect(mockStatus).toHaveBeenCalledWith(409);
 		expect(mockJson).toHaveBeenCalledWith({ message: "Email already exists" });
+	});
+
+	it("returns 500 when the service throws an unexpected error", async () => {
+		const unexpectedError = new Error("Database timeout");
+		mockRegisterUser.mockRejectedValue(unexpectedError);
+		req = {
+			body: {
+				fullName: "Test User",
+				email: "test.user@example.com",
+				password: "Strong!Pass9",
+			},
+		} as Request;
+
+		await controller.register(req, res);
+
+		expect(mockStatus).toHaveBeenCalledWith(500);
+		expect(mockJson).toHaveBeenCalledWith({ message: "Internal server error" });
 	});
 });
