@@ -1,4 +1,4 @@
-import prisma from "../prismaClient.js";
+import { prisma } from "../lib/prisma.js";
 import type { JobRole } from "../models/jobRole.js";
 
 export class JobRoleDao {
