@@ -3,102 +3,101 @@ import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 import argon2 from "argon2";
+
 if (!process.env.DATABASE_URL) {
-    throw new Error("DATABASE_URL is not set");
+	throw new Error("DATABASE_URL is not set");
 }
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 async function main() {
-    const engineering = await prisma.capability.upsert({
-        where: { capabilityId: 1 },
-        update: {},
-        create: {
-            capabilityName: "Engineering",
-        },
-    });
-    const consulting = await prisma.capability.upsert({
-        where: { capabilityId: 2 },
-        update: {},
-        create: {
-            capabilityName: "Consulting",
-        },
-    });
-    const band2 = await prisma.band.upsert({
-        where: { nameId: 1 },
-        update: {},
-        create: {
-            bandName: "Band 2",
-        },
-    });
-    const band3 = await prisma.band.upsert({
-        where: { nameId: 2 },
-        update: {},
-        create: {
-            bandName: "Band 3",
-        },
-    });
-    await prisma.jobRole.createMany({
-        data: [
-            {
-                roleName: "Software Engineer",
-                location: "Belfast",
-                capabilityId: engineering.capabilityId,
-                bandId: band2.nameId,
-                closingDate: new Date("2026-08-15T00:00:00.000Z"),
-                status: "OPEN",
-            },
-            {
-                roleName: "Platform Engineer",
-                location: "Dublin",
-                capabilityId: engineering.capabilityId,
-                bandId: band3.nameId,
-                closingDate: new Date("2026-09-01T00:00:00.000Z"),
-                status: "OPEN",
-            },
-            {
-                roleName: "Business Analyst",
-                location: "London",
-                capabilityId: consulting.capabilityId,
-                bandId: band2.nameId,
-                closingDate: new Date("2026-07-01T00:00:00.000Z"),
-                status: "CLOSED",
-            },
-        ],
-        skipDuplicates: true,
-    });
+	const engineering = await prisma.capability.upsert({
+		where: { capabilityId: 1 },
+		update: {},
+		create: {
+			capabilityName: "Engineering",
+		},
+	});
+	const consulting = await prisma.capability.upsert({
+		where: { capabilityId: 2 },
+		update: {},
+		create: {
+			capabilityName: "Consulting",
+		},
+	});
+	const band2 = await prisma.band.upsert({
+		where: { nameId: 1 },
+		update: {},
+		create: {
+			bandName: "Band 2",
+		},
+	});
+	const band3 = await prisma.band.upsert({
+		where: { nameId: 2 },
+		update: {},
+		create: {
+			bandName: "Band 3",
+		},
+	});
+	await prisma.jobRole.createMany({
+		data: [
+			{
+				roleName: "Software Engineer",
+				location: "Belfast",
+				capabilityId: engineering.capabilityId,
+				bandId: band2.nameId,
+				closingDate: new Date("2026-08-15T00:00:00.000Z"),
+				status: "OPEN",
+			},
+			{
+				roleName: "Platform Engineer",
+				location: "Dublin",
+				capabilityId: engineering.capabilityId,
+				bandId: band3.nameId,
+				closingDate: new Date("2026-09-01T00:00:00.000Z"),
+				status: "OPEN",
+			},
+			{
+				roleName: "Business Analyst",
+				location: "London",
+				capabilityId: consulting.capabilityId,
+				bandId: band2.nameId,
+				closingDate: new Date("2026-07-01T00:00:00.000Z"),
+				status: "CLOSED",
+			},
+		],
+		skipDuplicates: true,
+	});
 
+	const user = await prisma.user.upsert({
+		where: { email: "exampleuser1@hotmail.com" },
+		update: {},
+		create: {
+			email: "exampleuser1@hotmail.com",
+			passwordHash: await argon2.hash("password123"),
+			fullName: "Tim Cassells",
+			role: "USER",
+		},
+	});
 
+	const admin = await prisma.user.upsert({
+		where: { email: "admin@exampleadmin.com" },
+		update: {},
+		create: {
+			email: "admin@exampleadmin.com",
+			passwordHash: await argon2.hash("adminpassword"),
+			fullName: "Woody Henderson",
+			role: "ADMIN",
+		},
+	});
 
-    const user = await prisma.user.upsert({
-        where: { email: "exampleuser1@hotmail.com" }, 
-        update: {},
-        create: {
-            email: "exampleuser1@hotmail.com",
-            passwordHash: await argon2.hash("password123"),
-            fullName: "Tim Cassells",
-            role: "USER",
-        },
-    });
-
-    const admin = await prisma.user.upsert({
-        where: { email: "admin@exampleadmin.com" },
-        update: {},
-        create: {
-            email: "admin@exampleadmin.com",
-            passwordHash: await argon2.hash("adminpassword"),
-            fullName: "Woody Henderson",
-            role: "ADMIN",
-        },
-    });
-    
-    console.log("Seed data created successfully");
+	console.log("Seed data created successfully");
 }
 main()
-    .catch((error) => {
-    console.error("Seed failed", error);
-    process.exit(1);
-})
-    .finally(async () => {
-    await prisma.$disconnect();
-});
+	.catch((error) => {
+		console.error("Seed failed", error);
+		process.exit(1);
+	})
+	.finally(async () => {
+		await prisma.$disconnect();
+	});
 //# sourceMappingURL=seed.js.map

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { UserDao } from "../../src/daos/userDao.js";
 import { DuplicateUserEmailError } from "../../src/errors/userErrors.js";
 import { RegisterUserService } from "../../src/services/registerUserService.js";
-import type { UserDao } from "../../src/daos/userDao.js";
 
 describe("RegisterUserService.registerUser", () => {
 	const mockCreateUser = vi.fn();

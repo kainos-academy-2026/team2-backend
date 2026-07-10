@@ -1,11 +1,11 @@
 import type { Request, Response } from "express";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { LoginController } from "../../src/controllers/loginController.js";
-import type LoginService from "../../src/services/loginService.js";
 import {
 	InvalidCredentialsError,
 	UserNotFoundError,
 } from "../../src/errors/userErrors.js";
+import type LoginService from "../../src/services/loginService.js";
 
 describe("LoginController.login", () => {
 	const mockLogin = vi.fn();
@@ -53,7 +53,9 @@ describe("LoginController.login", () => {
 		await controller.login(req, res);
 
 		expect(mockStatus).toHaveBeenCalledWith(401);
-		expect(mockJson).toHaveBeenCalledWith({ message: "Invalid email or password" });
+		expect(mockJson).toHaveBeenCalledWith({
+			message: "Invalid email or password",
+		});
 	});
 
 	it("returns 401 when user does not exist", async () => {
@@ -65,7 +67,9 @@ describe("LoginController.login", () => {
 		await controller.login(req, res);
 
 		expect(mockStatus).toHaveBeenCalledWith(401);
-		expect(mockJson).toHaveBeenCalledWith({ message: "Invalid email or password" });
+		expect(mockJson).toHaveBeenCalledWith({
+			message: "Invalid email or password",
+		});
 	});
 
 	it("returns 500 for unexpected errors", async () => {

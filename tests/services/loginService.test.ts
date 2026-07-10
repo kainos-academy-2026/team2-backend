@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import LoginService from "../../src/services/loginService.js";
 import type { UserDao } from "../../src/daos/userDao.js";
-import type { PasswordHasher } from "../../src/interfaces/passwordHasher.js";
-import type TokenService from "../../src/interfaces/tokenService.js";
 import {
 	InvalidCredentialsError,
 	UserNotFoundError,
 } from "../../src/errors/userErrors.js";
+import type { PasswordHasher } from "../../src/interfaces/passwordHasher.js";
+import type TokenService from "../../src/interfaces/tokenService.js";
+import LoginService from "../../src/services/loginService.js";
 
 describe("LoginService.login", () => {
 	const mockFindUserByEmail = vi.fn();
@@ -49,7 +49,9 @@ describe("LoginService.login", () => {
 			password: "password123",
 		});
 
-		expect(mockFindUserByEmail).toHaveBeenCalledWith("exampleuser1@hotmail.com");
+		expect(mockFindUserByEmail).toHaveBeenCalledWith(
+			"exampleuser1@hotmail.com",
+		);
 	});
 
 	it("returns token when credentials are valid", async () => {

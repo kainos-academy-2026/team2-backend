@@ -1,4 +1,3 @@
-
 export interface JobRole {
 	jobRoleId: number;
 	roleName: string;

@@ -5,7 +5,10 @@ import { JobRoleMapper } from "../mappers/jobRoleMapper.js";
 import { JobRoleService } from "../services/jobRoleService.js";
 
 const jobRoleRouter = Router();
-const jobRoleService = new JobRoleService(new JobRoleDao(), new JobRoleMapper());
+const jobRoleService = new JobRoleService(
+	new JobRoleDao(),
+	new JobRoleMapper(),
+);
 const jobRoleController = new JobRoleController(jobRoleService);
 
 jobRoleRouter.get("/", (req, res) => jobRoleController.getAll(req, res));
