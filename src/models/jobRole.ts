@@ -1,4 +1,3 @@
-
 export interface JobRole {
 	jobRoleId: number;
 	roleName: string;
@@ -16,4 +15,3 @@ export interface JobRole {
 		bandName: string;
 	};
 }
-
