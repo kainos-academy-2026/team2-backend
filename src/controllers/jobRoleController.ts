@@ -25,10 +25,10 @@ export class JobRoleController {
 			if (jobRole) {
 				res.status(200).json(jobRole);
 			} else {
-				res.status(404).json({ error: "Job role not found" });
+				res.status(404).json({ message: "Job role not found" });
 			}
 		} catch {
-			res.status(500).json({ error: "Internal server error" });
+			res.status(500).json({ message: "Internal server error" });
 		}
 	}
 }
