@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { DuplicateUserEmailError } from "../../src/errors/userErrors.js";
 import { RegisterUserController } from "../../src/controllers/registerUserController.js";
+import { DuplicateUserEmailError } from "../../src/errors/userErrors.js";
 import type { RegisterUserService } from "../../src/services/registerUserService.js";
 
 describe("RegisterUserController.register", () => {
@@ -43,7 +43,9 @@ describe("RegisterUserController.register", () => {
 			password: "Strong!Pass9",
 		});
 		expect(mockStatus).toHaveBeenCalledWith(201);
-		expect(mockJson).toHaveBeenCalledWith({ message: "Account created successfully" });
+		expect(mockJson).toHaveBeenCalledWith({
+			message: "Account created successfully",
+		});
 	});
 
 	it("returns 409 when the service reports a duplicate email", async () => {
