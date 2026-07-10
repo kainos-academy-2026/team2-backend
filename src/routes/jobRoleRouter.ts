@@ -9,5 +9,9 @@ const service = new JobRoleService(new JobRoleDao(), new JobRoleMapper());
 const controller = new JobRoleController(service);
 
 router.get("/", (req, res) => controller.getAll(req, res));
+import idParamSchema from "../validators/idParamSchema.js";
+import { validateParams } from "../middleware/validateParams.js";
+
+router.get("/:id", validateParams(idParamSchema), (req, res) => controller.getById(req, res));
 
 export default router;

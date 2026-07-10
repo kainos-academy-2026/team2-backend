@@ -16,4 +16,16 @@ export class JobRoleDao {
       },
     });
   }
+
+  async findJobRoleById(jobRoleId: string): Promise<JobRole | null> {
+    return prisma.jobRole.findUnique({
+      where: {
+        jobRoleId: Number(jobRoleId),
+      },
+      include: {
+        capability: true,
+        band: true,
+      },
+    });
+  }
 }

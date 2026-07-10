@@ -14,4 +14,14 @@ export class JobRoleService {
 
     return jobRoles.map((jobRole) => this.jobRoleMapper.toResponse(jobRole));
   }
+
+  async findById(jobRoleId: string): Promise<JobRoleResponseDto | null> {
+    const jobRole = await this.jobRoleDao.findJobRoleById(jobRoleId);
+
+    if (!jobRole) {
+      return null;
+    }
+
+    return this.jobRoleMapper.toResponse(jobRole);
+  }
 }

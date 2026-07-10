@@ -23,6 +23,10 @@ model JobRole {
   bandId       Int
   closingDate  DateTime
   status       String
+  description  String        @default("")
+  responsibilities String[]  @default([])
+  sharepointUrl String       @default("")
+  numberOfOpenPositions Int  @default(0)
   capability   Capability    @relation(fields: [capabilityId], references: [capabilityId])
   band         Band          @relation(fields: [bandId], references: [nameId])
 }

@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
@@ -44,6 +45,10 @@ async function main() {
                 bandId: band2.nameId,
                 closingDate: new Date("2026-08-15T00:00:00.000Z"),
                 status: "OPEN",
+                description: "Build and maintain backend services.",
+                responsibilities: ["Develop APIs", "Review code", "Support releases"],
+                sharepointUrl: "https://example.com/job-role/software-engineer",
+                numberOfOpenPositions: 3,
             },
             {
                 roleName: "Platform Engineer",
@@ -52,6 +57,10 @@ async function main() {
                 bandId: band3.nameId,
                 closingDate: new Date("2026-09-01T00:00:00.000Z"),
                 status: "OPEN",
+                description: "Own CI/CD and platform tooling.",
+                responsibilities: ["Improve pipelines", "Maintain infrastructure", "Automate deployments"],
+                sharepointUrl: "https://example.com/job-role/platform-engineer",
+                numberOfOpenPositions: 2,
             },
             {
                 roleName: "Business Analyst",
@@ -60,6 +69,10 @@ async function main() {
                 bandId: band2.nameId,
                 closingDate: new Date("2026-07-01T00:00:00.000Z"),
                 status: "CLOSED",
+                description: "Gather requirements and shape delivery scope.",
+                responsibilities: ["Run stakeholder workshops", "Document requirements", "Support roadmap planning"],
+                sharepointUrl: "https://example.com/job-role/business-analyst",
+                numberOfOpenPositions: 1,
             },
         ],
         skipDuplicates: true,

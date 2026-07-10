@@ -35,7 +35,12 @@ describe("JobRoleController.getAll", () => {
 				location: "Cork",
 				capability: "Engineering",
 				band: "Band 1",
-				closingDate: makeJobRole().closingDate,
+				closingDate: makeJobRole().closingDate.toISOString(),
+				status: "OPEN",
+				description: "Write APIs.",
+				responsibilities: "",
+				sharepointUrl: "",
+				numberOfOpenPositions: 1,
 			},
 		];
 		mockFindAllOpen.mockResolvedValue(rows);

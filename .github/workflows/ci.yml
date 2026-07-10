@@ -1,9 +1,9 @@
 name: CI
 
 on:
-  push:
-    branches: [main]
   pull_request:
+    types: [opened, synchronize, reopened]
+  push:
     branches: [main]
 
 jobs:
@@ -17,5 +17,6 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+      - run: npm run test:build
       - run: npm run lint
       - run: npm test

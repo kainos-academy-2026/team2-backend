@@ -33,6 +33,11 @@ describe("GET /job-roles", () => {
 				capability: "Engineering",
 				band: "Band 2",
 				closingDate: new Date("2026-08-01T00:00:00.000Z"),
+				status: "OPEN",
+				description: "Build and maintain platform services.",
+				responsibilities: ["Develop APIs", "Maintain CI/CD pipelines"],
+				sharepointUrl: "https://example.com/job-role/1",
+				numberOfOpenPositions: 3,
 			},
 		];
 		mockFindAllOpen.mockResolvedValue(roles);
@@ -47,6 +52,11 @@ describe("GET /job-roles", () => {
 				capability: "Engineering",
 				band: "Band 2",
 				closingDate: roles[0]?.closingDate.toISOString(),
+				status: "OPEN",
+				description: "Build and maintain platform services.",
+				responsibilities: ["Develop APIs", "Maintain CI/CD pipelines"],
+				sharepointUrl: "https://example.com/job-role/1",
+				numberOfOpenPositions: 3,
 			},
 		]);
 	});
