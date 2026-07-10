@@ -15,8 +15,10 @@ Create a `.env` file in the repository root:
 ```bash
 PORT=3001
 DATABASE_URL="postgresql://<db_user>:<db_password>@localhost:5432/jobs_db"
+CORS_ORIGIN="http://localhost:3001"
 ```
 
+`CORS_ORIGIN` is optional and defaults to `http://localhost:3001`.
 
 ## API Application (this repository)
 
@@ -54,6 +56,12 @@ Lint and auto-fix API code:
 
 ```bash
 npm run lint:fix
+```
+
+Lint and auto-fix API code (including unsafe fixes):
+
+```bash
+npm run lint:fix -- --unsafe
 ```
 
 ### API Testing
@@ -104,6 +112,12 @@ Create and apply a new migration:
 npx prisma migrate dev --name <migration_name>
 ```
 
+Generate Prisma client (run this after pulling schema changes):
+
+```bash
+npx prisma generate
+```
+
 Check migration status:
 
 ```bash
@@ -130,6 +144,12 @@ Populate the database with starter data:
 npx prisma db seed
 ```
 
+The seed command is configured in `prisma.config.ts` and runs:
+
+```bash
+node prisma/seed.js
+```
+
 If you reset the database, run seed again after migrations:
 
 ```bash
@@ -143,14 +163,44 @@ npx prisma db seed
 docker compose up -d
 npm install
 npx prisma migrate dev --name init
+npx prisma generate
 npx prisma db seed
 npm run dev
 ```
 
-### Health Check
+## API Endpoints
 
-When the API is running, verify:
+- `GET /` returns a basic API overview.
+- `GET /health` returns `{ status: "UP", timestamp: "..." }`.
+- `GET /job-roles` returns open job roles.
+- `GET /job-roles/:id` returns a single job role by ID or `404` if not found.
+- `POST /` registers a user account.
+
+Job role responses currently include:
+
+- `jobRoleId`
+- `roleName`
+- `location`
+- `capability`
+- `band`
+- `closingDate`
+- `status`
+- `description`
+- `responsibilities`
+- `sharepointUrl`
+- `numberOfOpenPositions`
+
+## Quick Checks
+
+When the API is running, verify root and health:
 
 ```bash
+curl http://localhost:3001/
 curl http://localhost:3001/health
+```
+
+Check open roles:
+
+```bash
+curl http://localhost:3001/job-roles
 ```
