@@ -16,7 +16,7 @@ export class JobRoleController {
 	async getById(req: Request, res: Response): Promise<void> {
 		const jobRoleId = req.params.id;
 		if (!jobRoleId) {
-			res.status(400).json({ error: "Job role ID is required" });
+			res.status(400).json({ message: "Job role ID is required" });
 			return;
 		}
 
