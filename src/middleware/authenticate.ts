@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 
-const USER_ROLES = ["RECRUITMENT_ADMIN", "APPLICANT"] as const;
+const USER_ROLES = ["ADMIN", "USER"] as const;
 
 export type UserRole = (typeof USER_ROLES)[number];
 

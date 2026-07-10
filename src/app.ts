@@ -21,7 +21,7 @@ app.get("/health", (_req, res) => {
 });
 
 app.use("/job-roles", jobRoleRouter);
-app.use(registerRouter);
+app.use("/register", registerRouter);
 
 app.use((_err: Error, _req: Request, res: Response, _next: NextFunction) => {
 	res.status(500).json({ message: "Internal server error" });

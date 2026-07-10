@@ -19,7 +19,7 @@ import jobRoleRouter from "../../src/routes/jobRoleRouter.js";
 
 const TEST_JWT_SECRET = "test-jwt-secret";
 
-function createToken(role: "RECRUITMENT_ADMIN" | "APPLICANT" = "APPLICANT") {
+function createToken(role: "ADMIN" | "USER" = "USER") {
 	return jwt.sign({ sub: "user-1", role }, TEST_JWT_SECRET, { expiresIn: "1h" });
 }
 
@@ -51,7 +51,7 @@ describe("GET /job-roles", () => {
 			},
 		];
 		mockFindAllOpen.mockResolvedValue(roles);
-		const token = createToken("APPLICANT");
+		const token = createToken("USER");
 
 		const response = await request(app)
 			.get("/job-roles")
@@ -71,7 +71,7 @@ describe("GET /job-roles", () => {
 
 	it("returns 200 with an empty array", async () => {
 		mockFindAllOpen.mockResolvedValue([]);
-		const token = createToken("RECRUITMENT_ADMIN");
+		const token = createToken("ADMIN");
 
 		const response = await request(app)
 			.get("/job-roles")
@@ -83,7 +83,7 @@ describe("GET /job-roles", () => {
 
 	it("returns 500 when the service fails", async () => {
 		mockFindAllOpen.mockRejectedValue(new Error("db timeout"));
-		const token = createToken("RECRUITMENT_ADMIN");
+		const token = createToken("ADMIN");
 
 		const response = await request(app)
 			.get("/job-roles")

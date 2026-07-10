@@ -12,7 +12,7 @@ const controller = new JobRoleController(service);
 router.get(
 	"/",
 	authenticateToken,
-	authorizeRoles("RECRUITMENT_ADMIN", "APPLICANT"),
+	authorizeRoles("ADMIN", "USER"),
 	(req, res) => controller.getAll(req, res),
 );
 
