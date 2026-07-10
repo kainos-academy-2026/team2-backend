@@ -7,6 +7,7 @@ import express, {
 } from "express";
 import { validateBody } from "./middleware/validateBody.js";
 import jobRoleRouter from "./routes/jobRoleRouter.js";
+import loginRouter from "./routes/loginRouter.js";
 import registerRouter from "./routes/register.js";
 import { registerUserSchema } from "./validators/registerUserValidator.js";
 
@@ -21,6 +22,7 @@ app.get("/health", (_req, res) => {
 });
 
 app.use("/job-roles", jobRoleRouter);
+app.use(loginRouter);
 app.use(registerRouter);
 
 app.use((_err: Error, _req: Request, res: Response, _next: NextFunction) => {

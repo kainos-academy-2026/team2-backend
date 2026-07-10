@@ -1,6 +1,8 @@
+#!/usr/bin/env node
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
+import argon2 from "argon2";
 if (!process.env.DATABASE_URL) {
     throw new Error("DATABASE_URL is not set");
 }
@@ -64,6 +66,32 @@ async function main() {
         ],
         skipDuplicates: true,
     });
+
+
+
+    const user = await prisma.user.upsert({
+        where: { email: "exampleuser1@hotmail.com" }, 
+        update: {},
+        create: {
+            email: "exampleuser1@hotmail.com",
+            passwordHash: await argon2.hash("password123"),
+            fullName: "Tim Cassells",
+            role: "USER",
+        },
+    });
+
+    const admin = await prisma.user.upsert({
+        where: { email: "admin@exampleadmin.com" },
+        update: {},
+        create: {
+            email: "admin@exampleadmin.com",
+            passwordHash: await argon2.hash("adminpassword"),
+            fullName: "Woody Henderson",
+            role: "ADMIN",
+        },
+    });
+    
+    console.log("Seed data created successfully");
 }
 main()
     .catch((error) => {
