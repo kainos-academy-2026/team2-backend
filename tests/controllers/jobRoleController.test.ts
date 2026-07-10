@@ -38,7 +38,7 @@ describe("JobRoleController.getAll", () => {
 				closingDate: makeJobRole().closingDate.toISOString(),
 				status: "OPEN",
 				description: "Write APIs.",
-				responsibilities: "",
+				responsibilities: [],
 				sharepointUrl: "",
 				numberOfOpenPositions: 1,
 			},

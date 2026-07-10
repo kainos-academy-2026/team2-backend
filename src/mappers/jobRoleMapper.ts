@@ -14,7 +14,7 @@ export class JobRoleMapper {
       description: jobRole.description,
       responsibilities: jobRole.responsibilities,
       sharepointUrl: jobRole.sharepointUrl,
-      numberOfOpenPositions: jobRole.numberOfOpenPositions,
+      numberOfOpenPositions: jobRole.numberOfOpenPositions
     };
   }
 }

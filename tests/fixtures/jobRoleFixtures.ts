@@ -16,6 +16,5 @@ export const makeJobRole = (overrides: Partial<JobRole> = {}): JobRole => ({
 	responsibilities: ["Write code, review code, deploy code."],
 	sharepointUrl: "https://example.com/job-role",
 	numberOfOpenPositions: 3,
-
 	...overrides,
 });
