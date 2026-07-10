@@ -2,6 +2,10 @@ import type { Request, Response } from "express";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { LoginController } from "../../src/controllers/loginController.js";
 import type LoginService from "../../src/services/loginService.js";
+import {
+	InvalidCredentialsError,
+	UserNotFoundError,
+} from "../../src/errors/userErrors.js";
 
 describe("LoginController.login", () => {
 	const mockLogin = vi.fn();
@@ -41,7 +45,7 @@ describe("LoginController.login", () => {
 	});
 
 	it("returns 401 for invalid credentials", async () => {
-		mockLogin.mockRejectedValue(new Error("Invalid password"));
+		mockLogin.mockRejectedValue(new InvalidCredentialsError());
 		req = {
 			body: { email: "exampleuser1@hotmail.com", password: "wrong" },
 		} as Request;
@@ -53,7 +57,7 @@ describe("LoginController.login", () => {
 	});
 
 	it("returns 401 when user does not exist", async () => {
-		mockLogin.mockRejectedValue(new Error("User not found"));
+		mockLogin.mockRejectedValue(new UserNotFoundError());
 		req = {
 			body: { email: "missing@example.com", password: "password123" },
 		} as Request;

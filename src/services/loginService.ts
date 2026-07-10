@@ -3,6 +3,7 @@ import type { PasswordHasher } from "../interfaces/passwordHasher.js";
 import type TokenService from "../interfaces/tokenService.js";
 import type { LoginRequestDto } from "../dtos/loginRequestDto.js";
 import type { LoginResponseDto } from "../dtos/loginResponseDto.js";
+import { InvalidCredentialsError, UserNotFoundError } from "../errors/userErrors.js";
 
 export default class LoginService {
     constructor(
@@ -15,12 +16,12 @@ export default class LoginService {
         const normalizedEmail = loginRequest.email.trim().toLowerCase();
         const user = await this.userDao.findUserByEmail(normalizedEmail);
         if (!user) {
-            throw new Error("User not found");
+            throw new UserNotFoundError();
         }
 
         const isPasswordValid = await this.passwordHasher.compare(loginRequest.password, user.passwordHash);
         if (!isPasswordValid) {
-            throw new Error("Invalid password");
+            throw new InvalidCredentialsError();
         }
 
         const token = await this.tokenService.create(user);

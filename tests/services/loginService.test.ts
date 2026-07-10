@@ -3,6 +3,10 @@ import LoginService from "../../src/services/loginService.js";
 import type { UserDao } from "../../src/daos/userDao.js";
 import type { PasswordHasher } from "../../src/interfaces/passwordHasher.js";
 import type TokenService from "../../src/interfaces/tokenService.js";
+import {
+	InvalidCredentialsError,
+	UserNotFoundError,
+} from "../../src/errors/userErrors.js";
 
 describe("LoginService.login", () => {
 	const mockFindUserByEmail = vi.fn();
@@ -75,7 +79,7 @@ describe("LoginService.login", () => {
 
 		await expect(
 			service.login({ email: "missing@example.com", password: "password123" }),
-		).rejects.toThrow("User not found");
+		).rejects.toThrow(UserNotFoundError);
 
 		expect(mockCompare).not.toHaveBeenCalled();
 		expect(mockCreateToken).not.toHaveBeenCalled();
@@ -93,7 +97,7 @@ describe("LoginService.login", () => {
 
 		await expect(
 			service.login({ email: "test@example.com", password: "wrong" }),
-		).rejects.toThrow("Invalid password");
+		).rejects.toThrow(InvalidCredentialsError);
 
 		expect(mockCreateToken).not.toHaveBeenCalled();
 	});
