@@ -9,7 +9,7 @@ export class JobRoleMapper {
 			location: jobRole.location,
 			capability: jobRole.capability.capabilityName,
 			band: jobRole.band.bandName,
-			closingDate: jobRole.closingDate,
+			closingDate: jobRole.closingDate.toISOString(),
 			status: jobRole.status,
 			description: jobRole.description,
 			responsibilities: jobRole.responsibilities,

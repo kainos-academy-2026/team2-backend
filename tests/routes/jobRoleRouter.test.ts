@@ -125,10 +125,10 @@ describe("GET /job-roles/:id", () => {
 		expect(response.body).toEqual({ message: "Job role not found" });
 	});
 
-	it("returns 404 when job role ID is not found", async () => {
+	it("returns 400 when job role ID is invalid", async () => {
 		const response = await request(app).get("/job-roles/invalid");
 
-		expect(response.status).toBe(404);
+		expect(response.status).toBe(400);
 		expect(response.body).toHaveProperty("message");
 	});
 

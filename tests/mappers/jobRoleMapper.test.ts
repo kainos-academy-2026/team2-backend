@@ -28,7 +28,7 @@ describe("JobRoleMapper.toResponse", () => {
 			location: "Galway",
 			capability: "Quality",
 			band: "Band 3",
-			closingDate,
+			closingDate: closingDate.toISOString(),
 			status: "OPEN",
 			description: "Test software thoroughly.",
 			responsibilities: ["Write test cases, execute tests, report bugs."],
