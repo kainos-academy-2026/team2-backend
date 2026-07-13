@@ -2,7 +2,7 @@ export interface JobRole {
 	jobRoleId: number;
 	roleName: string;
 	location: string;
-	closingDate: Date;
+	closingDate: string;
 	status: string;
 	description: string;
 	responsibilities: string[];

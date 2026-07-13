@@ -4,7 +4,7 @@ export interface JobRoleResponseDto {
 	location: string;
 	capability: string;
 	band: string;
-	closingDate: Date;
+	closingDate: string;
 	status: string;
 	description: string;
 	responsibilities: string[];
