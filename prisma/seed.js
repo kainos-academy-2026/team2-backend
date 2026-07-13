@@ -47,6 +47,10 @@ async function main() {
 				bandId: band2.nameId,
 				closingDate: new Date("2026-08-15T00:00:00.000Z"),
 				status: "OPEN",
+				description: "Build and maintain backend services.",
+				responsibilities: ["Develop APIs", "Review code", "Support releases"],
+				sharepointUrl: "https://example.com/job-role/software-engineer",
+				numberOfOpenPositions: 3,
 			},
 			{
 				roleName: "Platform Engineer",
@@ -55,6 +59,14 @@ async function main() {
 				bandId: band3.nameId,
 				closingDate: new Date("2026-09-01T00:00:00.000Z"),
 				status: "OPEN",
+				description: "Own CI/CD and platform tooling.",
+				responsibilities: [
+					"Improve pipelines",
+					"Maintain infrastructure",
+					"Automate deployments",
+				],
+				sharepointUrl: "https://example.com/job-role/platform-engineer",
+				numberOfOpenPositions: 2,
 			},
 			{
 				roleName: "Business Analyst",
@@ -63,12 +75,20 @@ async function main() {
 				bandId: band2.nameId,
 				closingDate: new Date("2026-07-01T00:00:00.000Z"),
 				status: "CLOSED",
+				description: "Gather requirements and shape delivery scope.",
+				responsibilities: [
+					"Run stakeholder workshops",
+					"Document requirements",
+					"Support roadmap planning",
+				],
+				sharepointUrl: "https://example.com/job-role/business-analyst",
+				numberOfOpenPositions: 1,
 			},
 		],
 		skipDuplicates: true,
 	});
 
-	const user = await prisma.user.upsert({
+	const _user = await prisma.user.upsert({
 		where: { email: "exampleuser1@hotmail.com" },
 		update: {},
 		create: {
@@ -79,7 +99,7 @@ async function main() {
 		},
 	});
 
-	const admin = await prisma.user.upsert({
+	const _admin = await prisma.user.upsert({
 		where: { email: "admin@exampleadmin.com" },
 		update: {},
 		create: {
