@@ -11,3 +11,4 @@ export interface JobRoleResponseDto {
 	sharepointUrl: string;
 	numberOfOpenPositions: number;
 }
+

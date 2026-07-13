@@ -3,6 +3,7 @@ import { DuplicateUserEmailError } from "../errors/userErrors.js";
 import type { CreateUserInput } from "../interfaces/createUserInput.js";
 import type { PasswordHasher } from "../interfaces/passwordHasher.js";
 import { Role } from "../models/user.js";
+import Argon2PasswordHashingService from "./argon2PasswordHashingService.js";
 
 export class RegisterUserService {
 	constructor(

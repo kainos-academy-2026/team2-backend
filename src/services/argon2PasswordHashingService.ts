@@ -6,4 +6,8 @@ export default class Argon2PasswordHashingService implements PasswordHasher {
 		const hash = await argon2.hash(password);
 		return hash;
 	}
+
+	async compare(password: string, hashedPassword: string): Promise<boolean> {
+		return await argon2.verify(hashedPassword, password);
+	}
 }

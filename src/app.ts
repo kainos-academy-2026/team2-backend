@@ -5,6 +5,7 @@ import express, {
 	type Response,
 } from "express";
 import jobRoleRouter from "./routes/jobRoleRouter.js";
+import loginRouter from "./routes/loginRouter.js";
 import registerRouter from "./routes/register.js";
 
 export const app = express();
@@ -29,6 +30,7 @@ app.get("/health", (_req, res) => {
 });
 
 app.use("/job-roles", jobRoleRouter);
+app.use(loginRouter);
 app.use(registerRouter);
 
 app.use((_err: Error, _req: Request, res: Response, _next: NextFunction) => {
