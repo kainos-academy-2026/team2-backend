@@ -34,7 +34,9 @@ describe("validateParams", () => {
 		middleware(req, res, next);
 
 		expect(status).toHaveBeenCalledWith(400);
-		expect(json).toHaveBeenCalledWith({ message: "ID must be a positive number" });
+		expect(json).toHaveBeenCalledWith({
+			message: "ID must be a positive number",
+		});
 		expect(next).not.toHaveBeenCalled();
 	});
 

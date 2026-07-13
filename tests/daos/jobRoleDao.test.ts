@@ -22,8 +22,8 @@ describe("JobRoleDao.findOpenJobRoles", () => {
 	});
 
 	it("returns all open job roles ordered by closing date", async () => {
-		const role1 = makeJobRole({ jobRoleId: 1 });
-		const role2 = makeJobRole({ jobRoleId: 2 });
+		const role1 = makeJobRole({ jobRoleId: 1, capabilityId: 1, bandId: 1 });
+		const role2 = makeJobRole({ jobRoleId: 2, capabilityId: 1, bandId: 2 });
 		vi.mocked(prisma.jobRole.findMany).mockResolvedValue([role1, role2]);
 
 		const result = await dao.findOpenJobRoles();
@@ -71,7 +71,7 @@ describe("JobRoleDao.findJobRoleById", () => {
 	});
 
 	it("returns a job role by ID with includes", async () => {
-		const role = makeJobRole({ jobRoleId: 5 });
+		const role = makeJobRole({ jobRoleId: 5, capabilityId: 1, bandId: 1 });
 		vi.mocked(prisma.jobRole.findUnique).mockResolvedValue(role);
 
 		const result = await dao.findJobRoleById("5");
@@ -97,7 +97,7 @@ describe("JobRoleDao.findJobRoleById", () => {
 	});
 
 	it("converts string ID to number", async () => {
-		const role = makeJobRole({ jobRoleId: 42 });
+		const role = makeJobRole({ jobRoleId: 42, capabilityId: 1, bandId: 1 });
 		vi.mocked(prisma.jobRole.findUnique).mockResolvedValue(role);
 
 		await dao.findJobRoleById("42");

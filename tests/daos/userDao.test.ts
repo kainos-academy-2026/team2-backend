@@ -1,6 +1,7 @@
 import type { User as PrismaUser } from "@prisma/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { UserDao } from "../../src/daos/userDao.js";
+import { Role } from "../../src/models/user.js";
 
 vi.mock("../../src/lib/prisma.js", () => ({
 	prisma: {
@@ -22,22 +23,20 @@ describe("UserDao.createUser", () => {
 	});
 
 	it("creates a user with provided data", async () => {
-		const createdUser: PrismaUser = {
-			id: "uuid-123",
+		const createdUser = {
+			id: 1,
 			email: "test.user@example.com",
 			passwordHash: "hashed-password",
 			fullName: "Test User",
 			role: "user",
-			createdAt: new Date(),
-			updatedAt: new Date(),
-		};
+		} as PrismaUser;
 		vi.mocked(prisma.user.create).mockResolvedValue(createdUser);
 
 		const input = {
 			email: "test.user@example.com",
 			passwordHash: "hashed-password",
 			fullName: "Test User",
-			role: "user" as const,
+			role: Role.User,
 		};
 
 		const result = await dao.createUser(input);
@@ -58,7 +57,7 @@ describe("UserDao.createUser", () => {
 				email: "duplicate@example.com",
 				passwordHash: "hashed",
 				fullName: "User",
-				role: "user",
+				role: Role.User,
 			}),
 		).rejects.toThrow("unique constraint violation");
 	});
@@ -73,15 +72,13 @@ describe("UserDao.findUserByEmail", () => {
 	});
 
 	it("returns a user by email", async () => {
-		const user: PrismaUser = {
-			id: "uuid-456",
+		const user = {
+			id: 2,
 			email: "existing@example.com",
 			passwordHash: "hashed-password",
 			fullName: "Existing User",
 			role: "user",
-			createdAt: new Date(),
-			updatedAt: new Date(),
-		};
+		} as PrismaUser;
 		vi.mocked(prisma.user.findUnique).mockResolvedValue(user);
 
 		const result = await dao.findUserByEmail("existing@example.com");
