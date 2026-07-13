@@ -69,3 +69,82 @@ describe("JobRoleController.getAll", () => {
 		expect(mockJson).toHaveBeenCalledWith({ error: "Internal server error" });
 	});
 });
+
+describe("JobRoleController.getById", () => {
+	const mockFindById = vi.fn();
+	const mockStatus = vi.fn();
+	const mockJson = vi.fn();
+
+	let controller: JobRoleController;
+	let req: Request;
+	let res: Response;
+
+	beforeEach(() => {
+		vi.resetAllMocks();
+		mockStatus.mockReturnValue({ json: mockJson });
+
+		const mockService = {
+			findById: mockFindById,
+		} as unknown as JobRoleService;
+
+		controller = new JobRoleController(mockService);
+		req = { params: { id: "1" } } as unknown as Request;
+		res = {
+			status: mockStatus,
+		} as unknown as Response;
+	});
+
+	it("returns 200 and mapped job role when found", async () => {
+		const jobRole = {
+			jobRoleId: 1,
+			roleName: "Backend Engineer",
+			location: "Cork",
+			capability: "Engineering",
+			band: "Band 1",
+			closingDate: makeJobRole().closingDate.toISOString(),
+			status: "OPEN",
+			description: "Write APIs.",
+			responsibilities: ["Code", "Review"],
+			sharepointUrl: "https://example.com/job",
+			numberOfOpenPositions: 1,
+		};
+		mockFindById.mockResolvedValue(jobRole);
+
+		await controller.getById(req, res);
+
+		expect(mockFindById).toHaveBeenCalledWith("1");
+		expect(mockStatus).toHaveBeenCalledWith(200);
+		expect(mockJson).toHaveBeenCalledWith(jobRole);
+	});
+
+	it("returns 404 when job role not found", async () => {
+		mockFindById.mockResolvedValue(null);
+
+		await controller.getById(req, res);
+
+		expect(mockFindById).toHaveBeenCalledWith("1");
+		expect(mockStatus).toHaveBeenCalledWith(404);
+		expect(mockJson).toHaveBeenCalledWith({ message: "Job role not found" });
+	});
+
+	it("returns 400 when job role ID is missing", async () => {
+		req = { params: {} } as unknown as Request;
+
+		await controller.getById(req, res);
+
+		expect(mockStatus).toHaveBeenCalledWith(400);
+		expect(mockJson).toHaveBeenCalledWith({
+			message: "Job role ID is required",
+		});
+		expect(mockFindById).not.toHaveBeenCalled();
+	});
+
+	it("returns 500 when service throws", async () => {
+		mockFindById.mockRejectedValue(new Error("db error"));
+
+		await controller.getById(req, res);
+
+		expect(mockStatus).toHaveBeenCalledWith(500);
+		expect(mockJson).toHaveBeenCalledWith({ message: "Internal server error" });
+	});
+});

@@ -59,3 +59,54 @@ describe("JobRoleService.findAllOpen", () => {
 		await expect(service.findAllOpen()).rejects.toThrow("db down");
 	});
 });
+
+describe("JobRoleService.findById", () => {
+	const mockFindJobRoleById = vi.fn();
+
+	let service: JobRoleService;
+
+	beforeEach(() => {
+		vi.resetAllMocks();
+		const mockDao = {
+			findJobRoleById: mockFindJobRoleById,
+		};
+		service = new JobRoleService(mockDao as never, new JobRoleMapper());
+	});
+
+	it("returns mapped job role when found", async () => {
+		const row = makeJobRole({ jobRoleId: 5 });
+		mockFindJobRoleById.mockResolvedValue(row);
+
+		const result = await service.findById("5");
+
+		expect(mockFindJobRoleById).toHaveBeenCalledWith("5");
+		expect(result).toEqual({
+			jobRoleId: row.jobRoleId,
+			roleName: row.roleName,
+			location: row.location,
+			capability: row.capability.capabilityName,
+			band: row.band.bandName,
+			closingDate: row.closingDate,
+			status: row.status,
+			description: row.description,
+			responsibilities: row.responsibilities,
+			sharepointUrl: row.sharepointUrl,
+			numberOfOpenPositions: row.numberOfOpenPositions,
+		});
+	});
+
+	it("returns null when job role not found", async () => {
+		mockFindJobRoleById.mockResolvedValue(null);
+
+		const result = await service.findById("999");
+
+		expect(mockFindJobRoleById).toHaveBeenCalledWith("999");
+		expect(result).toBeNull();
+	});
+
+	it("propagates DAO errors", async () => {
+		mockFindJobRoleById.mockRejectedValue(new Error("db timeout"));
+
+		await expect(service.findById("1")).rejects.toThrow("db timeout");
+	});
+});

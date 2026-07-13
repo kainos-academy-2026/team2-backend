@@ -1,4 +1,4 @@
-import { type RequestHandler, Router } from "express";
+import { Router } from "express";
 import { RegisterUserController } from "../controllers/registerUserController.js";
 import { UserDao } from "../daos/userDao.js";
 import { validateBody } from "../middleware/validateBody.js";

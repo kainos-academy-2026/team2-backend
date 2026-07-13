@@ -1,5 +1,4 @@
 import type { User as PrismaUser } from "@prisma/client";
-import type { CreateUserInput } from "../interfaces/createUserInput.js";
 import { prisma } from "../lib/prisma.js";
 import type User from "../models/user.js";
 

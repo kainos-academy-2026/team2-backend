@@ -87,65 +87,8 @@ async function main() {
 		],
 		skipDuplicates: true,
 	});
-	const engineering = await prisma.capability.upsert({
-		where: { capabilityId: 1 },
-		update: {},
-		create: {
-			capabilityName: "Engineering",
-		},
-	});
-	const consulting = await prisma.capability.upsert({
-		where: { capabilityId: 2 },
-		update: {},
-		create: {
-			capabilityName: "Consulting",
-		},
-	});
-	const band2 = await prisma.band.upsert({
-		where: { nameId: 1 },
-		update: {},
-		create: {
-			bandName: "Band 2",
-		},
-	});
-	const band3 = await prisma.band.upsert({
-		where: { nameId: 2 },
-		update: {},
-		create: {
-			bandName: "Band 3",
-		},
-	});
-	await prisma.jobRole.createMany({
-		data: [
-			{
-				roleName: "Software Engineer",
-				location: "Belfast",
-				capabilityId: engineering.capabilityId,
-				bandId: band2.nameId,
-				closingDate: new Date("2026-08-15T00:00:00.000Z"),
-				status: "OPEN",
-			},
-			{
-				roleName: "Platform Engineer",
-				location: "Dublin",
-				capabilityId: engineering.capabilityId,
-				bandId: band3.nameId,
-				closingDate: new Date("2026-09-01T00:00:00.000Z"),
-				status: "OPEN",
-			},
-			{
-				roleName: "Business Analyst",
-				location: "London",
-				capabilityId: consulting.capabilityId,
-				bandId: band2.nameId,
-				closingDate: new Date("2026-07-01T00:00:00.000Z"),
-				status: "CLOSED",
-			},
-		],
-		skipDuplicates: true,
-	});
 
-	const user = await prisma.user.upsert({
+	const _user = await prisma.user.upsert({
 		where: { email: "exampleuser1@hotmail.com" },
 		update: {},
 		create: {
@@ -156,7 +99,7 @@ async function main() {
 		},
 	});
 
-	const admin = await prisma.user.upsert({
+	const _admin = await prisma.user.upsert({
 		where: { email: "admin@exampleadmin.com" },
 		update: {},
 		create: {
@@ -170,13 +113,6 @@ async function main() {
 	console.log("Seed data created successfully");
 }
 main()
-	.catch((error) => {
-		console.error("Seed failed", error);
-		process.exit(1);
-	})
-	.finally(async () => {
-		await prisma.$disconnect();
-	});
 	.catch((error) => {
 		console.error("Seed failed", error);
 		process.exit(1);
