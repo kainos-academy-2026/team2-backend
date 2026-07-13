@@ -81,7 +81,7 @@ describe("GET /job-roles", () => {
 		const response = await request(app).get("/job-roles");
 
 		expect(response.status).toBe(500);
-		expect(response.body).toEqual({ error: "Internal server error" });
+		expect(response.body).toEqual({ message: "Internal server error" });
 	});
 });
 

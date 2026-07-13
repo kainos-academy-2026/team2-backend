@@ -14,17 +14,6 @@ const corsOrigin = process.env.CORS_ORIGIN ?? "http://localhost:3001";
 app.use(cors({ origin: corsOrigin }));
 app.use(express.json());
 
-app.get("/", (_req, res) => {
-	res.status(200).json({
-		message: "Team 2 backend is running",
-		endpoints: {
-			health: "/health",
-			jobRoles: "/job-roles",
-			register: "POST /",
-		},
-	});
-});
-
 app.get("/health", (_req, res) => {
 	res.json({ status: "UP", timestamp: new Date().toISOString() });
 });

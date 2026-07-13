@@ -6,4 +6,4 @@ seed.d.ts
 seed.d.ts.map
 seed.js.map
 /dev.db
-/coverage
+coverage/

@@ -3,7 +3,9 @@ import { Router } from "express";
 import { JobRoleController } from "../controllers/jobRoleController.js";
 import { JobRoleDao } from "../daos/jobRoleDao.js";
 import { JobRoleMapper } from "../mappers/jobRoleMapper.js";
+import { validateParams } from "../middleware/validateParams.js";
 import { JobRoleService } from "../services/jobRoleService.js";
+import idParamSchema from "../validators/idParamSchema.js";
 
 const jobRoleRouter = Router();
 const jobRoleService = new JobRoleService(
@@ -15,9 +17,6 @@ const jobRoleController = new JobRoleController(jobRoleService);
 jobRoleRouter.get("/", (req: Request, res: Response) =>
 	jobRoleController.getAll(req, res),
 );
-
-import { validateParams } from "../middleware/validateParams.js";
-import idParamSchema from "../validators/idParamSchema.js";
 
 jobRoleRouter.get(
 	"/:id",

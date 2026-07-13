@@ -8,7 +8,7 @@ export const validateParams =
 
 		if (!parsedRequest.success) {
 			const firstIssue =
-				parsedRequest.error.issues[0]?.message ?? "Invalid request body";
+				parsedRequest.error.issues[0]?.message ?? "Invalid request parameters";
 			res.status(400).json({ message: firstIssue });
 			return;
 		}

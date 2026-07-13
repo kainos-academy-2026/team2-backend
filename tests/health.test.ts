@@ -3,22 +3,6 @@ import { describe, expect, it } from "vitest";
 
 import { app } from "../src/app.js";
 
-describe("GET /", () => {
-	it("returns 200 with API overview", async () => {
-		const response = await request(app).get("/");
-
-		expect(response.status).toBe(200);
-		expect(response.body).toMatchObject({
-			message: "Team 2 backend is running",
-			endpoints: {
-				health: "/health",
-				jobRoles: "/job-roles",
-				register: "POST /",
-			},
-		});
-	});
-});
-
 describe("GET /health", () => {
 	it("returns 200", async () => {
 		const response = await request(app).get("/health");

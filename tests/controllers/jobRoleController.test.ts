@@ -66,7 +66,7 @@ describe("JobRoleController.getAll", () => {
 		await controller.getAll(req, res);
 
 		expect(mockStatus).toHaveBeenCalledWith(500);
-		expect(mockJson).toHaveBeenCalledWith({ error: "Internal server error" });
+		expect(mockJson).toHaveBeenCalledWith({ message: "Internal server error" });
 	});
 });
 
