@@ -2,14 +2,11 @@ import cors from "cors";
 import express, {
 	type NextFunction,
 	type Request,
-	type RequestHandler,
 	type Response,
 } from "express";
-import { validateBody } from "./middleware/validateBody.js";
 import jobRoleRouter from "./routes/jobRoleRouter.js";
 import loginRouter from "./routes/loginRouter.js";
 import registerRouter from "./routes/register.js";
-import { registerUserSchema } from "./validators/registerUserValidator.js";
 
 export const app = express();
 
@@ -23,7 +20,7 @@ app.get("/health", (_req, res) => {
 
 app.use("/job-roles", jobRoleRouter);
 app.use(loginRouter);
-app.use(registerRouter);
+app.use("/register", registerRouter);
 
 app.use((_err: Error, _req: Request, res: Response, _next: NextFunction) => {
 	res.status(500).json({ message: "Internal server error" });

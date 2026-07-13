@@ -15,7 +15,7 @@ vi.mock("../src/controllers/registerUserController.js", () => {
 
 import { app } from "../src/app.js";
 
-describe("POST /", () => {
+describe("POST /register", () => {
 	beforeEach(() => {
 		vi.resetAllMocks();
 	});
@@ -25,7 +25,7 @@ describe("POST /", () => {
 			res.status(201).json({ message: "Account created successfully" });
 		});
 
-		const response = await request(app).post("/").send({
+		const response = await request(app).post("/register").send({
 			fullName: "Test User",
 			email: "test.user@example.com",
 			password: "Strong!Pass9",
@@ -37,7 +37,7 @@ describe("POST /", () => {
 	});
 
 	it("rejects invalid email format", async () => {
-		const response = await request(app).post("/").send({
+		const response = await request(app).post("/register").send({
 			fullName: "Test User",
 			email: "not-an-email",
 			password: "Strong!Pass9",
@@ -49,7 +49,7 @@ describe("POST /", () => {
 	});
 
 	it("rejects weak passwords", async () => {
-		const response = await request(app).post("/").send({
+		const response = await request(app).post("/register").send({
 			fullName: "Test User",
 			email: "test.user@example.com",
 			password: "weakpass",
@@ -67,7 +67,7 @@ describe("POST /", () => {
 			res.status(409).json({ message: "Email already exists" });
 		});
 
-		const response = await request(app).post("/").send({
+		const response = await request(app).post("/register").send({
 			fullName: "Test User",
 			email: "test.user@example.com",
 			password: "Strong!Pass9",
