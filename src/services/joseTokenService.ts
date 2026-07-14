@@ -31,4 +31,9 @@ export default class JoseTokenService implements TokenService {
 
 		return token;
 	}
+
+	async verify(token: string): Promise<jose.JWTPayload> {
+		const { payload } = await jose.jwtVerify(token, this.secretKey);
+		return payload;
+	}
 }

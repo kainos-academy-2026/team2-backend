@@ -21,6 +21,21 @@
   - For example, if the file is `src/services/userService.ts`, the test file should be `tests/services/userService.test.ts`.
 - Unit tests should reflect the code's behavior; do not change the code to make a test pass
 
+## API Verification Expectations
+
+- For API changes (routes, controllers, middleware, validators, DTOs, or services used by HTTP handlers), verify endpoint behavior.
+- Add or update route/integration tests to assert API contract changes where appropriate.
+- Cover both:
+	- successful responses (expected status code and response body)
+	- failure responses (validation errors, not found, auth errors, and internal errors where relevant)
+- Prefer testing through existing test suites (for example using Supertest), and use curl as a manual verification step when useful.
+- For curl checks, verify and report:
+	- HTTP status code
+	- response body
+	- key headers (for example `Content-Type`)
+	- both a happy-path request and at least one unhappy-path request for changed endpoints
+- If manual API checks are performed, include the exact curl command(s), endpoint, request payload, and expected/actual output in the final summary.
+
 ## Validation Workflow
 
 - After each completed code change, run:
@@ -37,9 +52,29 @@
 - Validate inputs at boundaries and keep business logic out of routing and wiring code.
 - Preserve existing behavior unless the task requires a behavior change.
 - Update only the files necessary to solve the task.
+- Services shared across routers and middleware (e.g. `TokenService`) must be instantiated once in `app.ts` and injected into each consumer. Router files should accept shared services as parameters via a factory function (e.g. `createLoginRouter(tokenService)`) rather than instantiating them internally. This avoids duplicate instances and makes the wiring easier to test.
 
 ## Output Expectations
 
 - Summarize what changed in a concise way.
 - Report the result of `npm run lint:fix`, `npm run lint`, and `npm run test` after making changes.
+- Report any API verification performed for the changed endpoints.
 - Call out any remaining risks, gaps, or blockers.
+
+## When creating a pull request do the following:
+ 
+## Add details:
+### What does this PR do?
+ 
+Briefly describe the change and why it was made.
+Include the ticket number or description in the PR title and description - e.g. '[ABC-123] Add new feature to handle user authentication'.
+ 
+## The type of change
+ 
+- [ ] New feature / functionality
+- [ ] Bug fix
+- [ ] Refactor (no functional change)
+- [ ] Other: <!-- describe -->
+ 
+### Testing done for this change (unit tests, integration tests)
+Confirm what tests you added and what paths were tested, even if already ran in the CI/CD pipeline.

@@ -24,6 +24,10 @@ import jobRoleRouter from "../../src/routes/jobRoleRouter.js";
 describe("GET /job-roles", () => {
 	const app = express();
 	app.use(express.json());
+	app.use((_req, res, next) => {
+		res.locals.authUser = { role: "user" };
+		next();
+	});
 	app.use("/job-roles", jobRoleRouter);
 
 	beforeEach(() => {
@@ -83,11 +87,22 @@ describe("GET /job-roles", () => {
 		expect(response.status).toBe(500);
 		expect(response.body).toEqual({ message: "Internal server error" });
 	});
+
+	it("returns 403 when user tries a write method", async () => {
+		const response = await request(app).post("/job-roles").send({});
+
+		expect(response.status).toBe(403);
+		expect(response.body).toEqual({ message: "Forbidden" });
+	});
 });
 
 describe("GET /job-roles/:id", () => {
 	const app = express();
 	app.use(express.json());
+	app.use((_req, res, next) => {
+		res.locals.authUser = { role: "user" };
+		next();
+	});
 	app.use("/job-roles", jobRoleRouter);
 
 	beforeEach(() => {
@@ -139,5 +154,21 @@ describe("GET /job-roles/:id", () => {
 
 		expect(response.status).toBe(500);
 		expect(response.body).toEqual({ message: "Internal server error" });
+	});
+});
+
+describe("Write methods for admin", () => {
+	const app = express();
+	app.use(express.json());
+	app.use((_req, res, next) => {
+		res.locals.authUser = { role: "admin" };
+		next();
+	});
+	app.use("/job-roles", jobRoleRouter);
+
+	it("does not return 403 for write methods", async () => {
+		const response = await request(app).post("/job-roles").send({});
+
+		expect(response.status).toBe(404);
 	});
 });

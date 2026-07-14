@@ -3,7 +3,9 @@ import { Router } from "express";
 import { JobRoleController } from "../controllers/jobRoleController.js";
 import { JobRoleDao } from "../daos/jobRoleDao.js";
 import { JobRoleMapper } from "../mappers/jobRoleMapper.js";
+import { requireAdmin, requireAnyRole } from "../middleware/auth.js";
 import { validateParams } from "../middleware/validateParams.js";
+import { Role } from "../models/user.js";
 import { JobRoleService } from "../services/jobRoleService.js";
 import idParamSchema from "../validators/idParamSchema.js";
 
@@ -13,6 +15,15 @@ const jobRoleService = new JobRoleService(
 	new JobRoleMapper(),
 );
 const jobRoleController = new JobRoleController(jobRoleService);
+
+jobRoleRouter.use((req, res, next) => {
+	if (req.method === "GET") {
+		requireAnyRole([Role.User, Role.Admin])(req, res, next);
+		return;
+	}
+
+	requireAdmin(req, res, next);
+});
 
 jobRoleRouter.get("/", (req: Request, res: Response) =>
 	jobRoleController.getAll(req, res),
