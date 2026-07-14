@@ -4,9 +4,11 @@ import express, {
 	type Request,
 	type Response,
 } from "express";
+import { authenticateRequest } from "./middleware/auth.js";
 import jobRoleRouter from "./routes/jobRoleRouter.js";
 import loginRouter from "./routes/loginRouter.js";
 import registerRouter from "./routes/register.js";
+import JoseTokenService from "./services/joseTokenService.js";
 
 export const app = express();
 
@@ -18,9 +20,12 @@ app.get("/health", (_req, res) => {
 	res.json({ status: "UP", timestamp: new Date().toISOString() });
 });
 
-app.use("/job-roles", jobRoleRouter);
 app.use(loginRouter);
 app.use(registerRouter);
+
+const tokenService = new JoseTokenService();
+app.use(authenticateRequest(tokenService));
+app.use("/job-roles", jobRoleRouter);
 
 app.use((_err: Error, _req: Request, res: Response, _next: NextFunction) => {
 	res.status(500).json({ message: "Internal server error" });

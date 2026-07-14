@@ -28,6 +28,7 @@ describe("LoginService.login", () => {
 
 		const tokenService = {
 			create: mockCreateToken,
+			verify: vi.fn(),
 		} as TokenService;
 
 		service = new LoginService(userDao, passwordHasher, tokenService);
