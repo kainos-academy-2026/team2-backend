@@ -6,7 +6,9 @@ import { JobRoleMapper } from "../mappers/jobRoleMapper.js";
 import { requireAdmin } from "../middleware/requireAdmin.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { validateBody } from "../middleware/validateBody.js";
+import { requireAnyRole } from "../middleware/auth.js";
 import { validateParams } from "../middleware/validateParams.js";
+import { Role } from "../models/user.js";
 import { JobRoleService } from "../services/jobRoleService.js";
 import createJobRoleSchema from "../validators/createJobRoleValidator.js";
 import idParamSchema from "../validators/idParamSchema.js";
@@ -17,6 +19,15 @@ const jobRoleService = new JobRoleService(
 	new JobRoleMapper(),
 );
 const jobRoleController = new JobRoleController(jobRoleService);
+
+jobRoleRouter.use((req, res, next) => {
+	if (req.method === "GET") {
+		requireAnyRole([Role.User, Role.Admin])(req, res, next);
+		return;
+	}
+
+	requireAdmin(req, res, next);
+});
 
 jobRoleRouter.get("/", (req: Request, res: Response) =>
 	jobRoleController.getAll(req, res),

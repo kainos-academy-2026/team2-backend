@@ -1,8 +1,15 @@
 import type { User } from "@prisma/client";
+import * as jose from "jose";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import JoseTokenService from "../../src/services/joseTokenService.js";
 
 vi.mock("jose", () => ({
+	jwtVerify: vi.fn().mockResolvedValue({
+		payload: {
+			sub: "1",
+			role: "user",
+		},
+	}),
 	SignJWT: class {
 		constructor(private payload: object) {}
 
@@ -40,6 +47,12 @@ describe("JoseTokenService.create", () => {
 
 	beforeEach(() => {
 		vi.resetAllMocks();
+		vi.mocked(jose.jwtVerify).mockResolvedValue({
+			payload: {
+				sub: "1",
+				role: "user",
+			},
+		} as never);
 		process.env.JWT_SECRET_KEY = "test-secret-key-for-testing";
 		service = new JoseTokenService();
 	});
@@ -106,5 +119,11 @@ describe("JoseTokenService.create", () => {
 		await service.create(user);
 
 		expect(true).toBe(true);
+	});
+
+	it("verifies and returns JWT payload", async () => {
+		const payload = await service.verify("jwt-token");
+
+		expect(payload).toMatchObject({ sub: "1", role: "user" });
 	});
 });
