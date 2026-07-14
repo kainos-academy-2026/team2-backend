@@ -1,8 +1,7 @@
+import type { UserDao } from "../daos/userDao.js";
 import { DuplicateUserEmailError } from "../errors/userErrors.js";
 import type { CreateUserInput } from "../interfaces/createUserInput.js";
 import type { PasswordHasher } from "../interfaces/passwordHasher.js";
-import type { UserDao } from "../daos/userDao.js";
-import Argon2PasswordHashingService from "./argon2PasswordHashingService.js";
 import { Role } from "../models/user.js";
 
 export class RegisterUserService {
@@ -12,7 +11,6 @@ export class RegisterUserService {
 	) {}
 
 	async registerUser(input: CreateUserInput): Promise<void> {
-
 		const userExists = await this.userDao.findUserByEmail(input.email);
 		if (userExists) {
 			throw new DuplicateUserEmailError();
