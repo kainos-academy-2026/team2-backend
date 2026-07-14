@@ -14,7 +14,7 @@ const registerUserService = new RegisterUserService(userDao, passwordHasher);
 const registerUserController = new RegisterUserController(registerUserService);
 
 registerRouter.post(
-	"/",
+	"/register",
 	validateBody(registerUserSchema),
 	registerUserController.register,
 );
