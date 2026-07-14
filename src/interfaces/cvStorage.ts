@@ -1,9 +1,14 @@
-export interface CvUploadInput {
+export interface CvUploadUrlInput {
 	key: string;
-	content: Buffer;
 	contentType: string;
 }
 
+export interface CvUploadUrlResponse {
+	cvKey: string;
+	uploadUrl: string;
+}
+
 export default interface CvStorage {
-	uploadCv(input: CvUploadInput): Promise<string>;
+	createCvUploadUrl(input: CvUploadUrlInput): Promise<CvUploadUrlResponse>;
+	getCvUrl(cvKey: string): string;
 }

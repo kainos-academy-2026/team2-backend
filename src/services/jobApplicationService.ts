@@ -20,31 +20,32 @@ export class JobApplicationService {
 		private readonly jobApplicationMapper: JobApplicationMapper,
 	) {}
 
+	async createCvUploadUrl(input: {
+		jobRoleId: string;
+		userId: number;
+		fileName: string;
+		contentType: string;
+	}): Promise<{ cvKey: string; uploadUrl: string }> {
+		const jobRole = await this.getOpenJobRole(input.jobRoleId);
+		await this.ensureUserExists(input.userId);
+
+		const safeFileName = input.fileName.replace(/[^a-zA-Z0-9._-]/g, "-");
+		const cvKey = `cvs/job-role-${jobRole.jobRoleId}/user-${input.userId}/${Date.now()}-${safeFileName}`;
+
+		return this.cvStorage.createCvUploadUrl({
+			key: cvKey,
+			contentType: input.contentType,
+		});
+	}
+
 	async applyForRole(input: {
 		jobRoleId: string;
 		userId: number;
-		file: Express.Multer.File;
+		cvKey: string;
 	}): Promise<JobApplicationResponseDto> {
-		const jobRole = await this.jobRoleDao.findJobRoleById(input.jobRoleId);
-		if (!jobRole) {
-			throw new Error("Job role not found");
-		}
-
-		if (jobRole.status !== "OPEN" || jobRole.numberOfOpenPositions <= 0) {
-			throw new JobRoleNotOpenForApplicationsError();
-		}
-
-		const user = await this.userDao.findUserById(input.userId);
-		if (!user) {
-			throw new UserNotFoundError();
-		}
-
-		const storageKey = `cvs/job-role-${jobRole.jobRoleId}/user-${input.userId}/${Date.now()}-${input.file.originalname}`;
-		const cvUrl = await this.cvStorage.uploadCv({
-			key: storageKey,
-			content: input.file.buffer,
-			contentType: input.file.mimetype,
-		});
+		const jobRole = await this.getOpenJobRole(input.jobRoleId);
+		await this.ensureUserExists(input.userId);
+		const cvUrl = this.cvStorage.getCvUrl(input.cvKey);
 
 		try {
 			const application = await this.jobApplicationDao.create({
@@ -64,6 +65,28 @@ export class JobApplicationService {
 			}
 
 			throw error;
+		}
+	}
+
+	private async getOpenJobRole(
+		jobRoleId: string,
+	): Promise<{ jobRoleId: number }> {
+		const jobRole = await this.jobRoleDao.findJobRoleById(jobRoleId);
+		if (!jobRole) {
+			throw new Error("Job role not found");
+		}
+
+		if (jobRole.status !== "OPEN" || jobRole.numberOfOpenPositions <= 0) {
+			throw new JobRoleNotOpenForApplicationsError();
+		}
+
+		return { jobRoleId: jobRole.jobRoleId };
+	}
+
+	private async ensureUserExists(userId: number): Promise<void> {
+		const user = await this.userDao.findUserById(userId);
+		if (!user) {
+			throw new UserNotFoundError();
 		}
 	}
 }

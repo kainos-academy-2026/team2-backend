@@ -1,6 +1,5 @@
 import type { Request, Response } from "express";
 import { Router } from "express";
-import multer from "multer";
 import { JobApplicationController } from "../controllers/jobApplicationController.js";
 import { JobRoleController } from "../controllers/jobRoleController.js";
 import { JobApplicationDao } from "../daos/jobApplicationDao.js";
@@ -15,9 +14,9 @@ import { JobRoleService } from "../services/jobRoleService.js";
 import S3CvStorageService from "../services/s3CvStorageService.js";
 import { applyForRoleSchema } from "../validators/applyForRoleValidator.js";
 import idParamSchema from "../validators/idParamSchema.js";
+import { requestCvUploadUrlSchema } from "../validators/requestCvUploadUrlValidator.js";
 
 const jobRoleRouter = Router();
-const upload = multer({ storage: multer.memoryStorage() });
 const jobRoleDao = new JobRoleDao();
 const jobRoleService = new JobRoleService(jobRoleDao, new JobRoleMapper());
 const jobRoleController = new JobRoleController(jobRoleService);
@@ -43,8 +42,14 @@ jobRoleRouter.get(
 );
 
 jobRoleRouter.post(
+	"/:id/applications/upload-url",
+	validateParams(idParamSchema),
+	validateBody(requestCvUploadUrlSchema),
+	jobApplicationController.createCvUploadUrl,
+);
+
+jobRoleRouter.post(
 	"/:id/applications",
-	upload.single("cv"),
 	validateParams(idParamSchema),
 	validateBody(applyForRoleSchema),
 	jobApplicationController.applyForRole,
