@@ -6,7 +6,7 @@ import express, {
 } from "express";
 import { authenticateRequest } from "./middleware/auth.js";
 import jobRoleRouter from "./routes/jobRoleRouter.js";
-import loginRouter from "./routes/loginRouter.js";
+import createLoginRouter from "./routes/loginRouter.js";
 import registerRouter from "./routes/register.js";
 import JoseTokenService from "./services/joseTokenService.js";
 
@@ -20,10 +20,10 @@ app.get("/health", (_req, res) => {
 	res.json({ status: "UP", timestamp: new Date().toISOString() });
 });
 
-app.use(loginRouter);
+const tokenService = new JoseTokenService();
+app.use(createLoginRouter(tokenService));
 app.use(registerRouter);
 
-const tokenService = new JoseTokenService();
 app.use(authenticateRequest(tokenService));
 app.use("/job-roles", jobRoleRouter);
 

@@ -52,6 +52,7 @@
 - Validate inputs at boundaries and keep business logic out of routing and wiring code.
 - Preserve existing behavior unless the task requires a behavior change.
 - Update only the files necessary to solve the task.
+- Services shared across routers and middleware (e.g. `TokenService`) must be instantiated once in `app.ts` and injected into each consumer. Router files should accept shared services as parameters via a factory function (e.g. `createLoginRouter(tokenService)`) rather than instantiating them internally. This avoids duplicate instances and makes the wiring easier to test.
 
 ## Output Expectations
 
