@@ -89,24 +89,30 @@ async function main() {
 	});
 
 	const _user = await prisma.user.upsert({
-		where: { email: "exampleuser1@hotmail.com" },
-		update: {},
+		where: { email: "applicant.seed@example.com" },
+		update: {
+			fullName: "Seed User",
+			role: "user",
+		},
 		create: {
-			email: "exampleuser1@hotmail.com",
-			passwordHash: await argon2.hash("password123"),
-			fullName: "Tim Cassells",
-			role: "USER",
+			email: "applicant.seed@example.com",
+			passwordHash: await argon2.hash("Applicant!123"),
+			fullName: "Seed User",
+			role: "user",
 		},
 	});
 
 	const _admin = await prisma.user.upsert({
-		where: { email: "admin@exampleadmin.com" },
-		update: {},
+		where: { email: "admin.seed@example.com" },
+		update: {
+			fullName: "Seed Admin",
+			role: "admin",
+		},
 		create: {
-			email: "admin@exampleadmin.com",
-			passwordHash: await argon2.hash("adminpassword"),
-			fullName: "Woody Henderson",
-			role: "ADMIN",
+			email: "admin.seed@example.com",
+			passwordHash: await argon2.hash("Admin!12345"),
+			fullName: "Seed Admin",
+			role: "admin",
 		},
 	});
 
