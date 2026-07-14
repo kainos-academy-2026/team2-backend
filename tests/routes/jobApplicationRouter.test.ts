@@ -60,6 +60,22 @@ describe("Job application routes", () => {
 			expect(response.status).toBe(400);
 			expect(response.body).toHaveProperty("message");
 		});
+
+		it("returns 400 when contentType is not application/pdf", async () => {
+			const response = await request(app)
+				.post("/job-roles/1/applications/upload-url")
+				.send({
+					userId: 2,
+					fileName: "cv.docx",
+					contentType:
+						"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+				});
+
+			expect(response.status).toBe(400);
+			expect(response.body).toEqual({
+				message: "Only PDF files are supported",
+			});
+		});
 	});
 
 	describe("POST /job-roles/:id/applications", () => {

@@ -1,8 +1,11 @@
 import type { JobApplication as PrismaJobApplication } from "@prisma/client";
 import { prisma } from "../lib/prisma.js";
+import type { JobApplicationMapper } from "../mappers/jobApplicationMapper.js";
 import type { JobApplication } from "../models/jobApplication.js";
 
 export class JobApplicationDao {
+	constructor(private readonly jobApplicationMapper: JobApplicationMapper) {}
+
 	async create(input: {
 		jobRoleId: number;
 		userId: number;
@@ -13,13 +16,6 @@ export class JobApplicationDao {
 			data: input,
 		});
 
-		return {
-			applicationId: result.applicationId,
-			jobRoleId: result.jobRoleId,
-			userId: result.userId,
-			cvUrl: result.cvUrl,
-			status: result.status,
-			createdAt: result.createdAt,
-		};
+		return this.jobApplicationMapper.toModel(result);
 	}
 }

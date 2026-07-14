@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import {
 	ApplicationAlreadyExistsError,
+	JobRoleNotFoundError,
 	JobRoleNotOpenForApplicationsError,
 } from "../errors/jobApplicationErrors.js";
 import { UserNotFoundError } from "../errors/userErrors.js";
@@ -10,20 +11,13 @@ export class JobApplicationController {
 	constructor(private readonly jobApplicationService: JobApplicationService) {}
 
 	createCvUploadUrl = async (req: Request, res: Response): Promise<void> => {
-		const jobRoleId = Array.isArray(req.params.id)
-			? req.params.id[0]
-			: req.params.id;
-
-		if (!jobRoleId) {
-			res.status(400).json({ message: "Job role ID is required" });
-			return;
-		}
+		const { id: jobRoleId } = req.params as { id: string };
 
 		try {
 			const { userId, fileName, contentType } = req.body as {
 				userId: number;
 				fileName: string;
-				contentType: string;
+				contentType: "application/pdf";
 			};
 			const result = await this.jobApplicationService.createCvUploadUrl({
 				jobRoleId,
@@ -35,14 +29,14 @@ export class JobApplicationController {
 		} catch (error: unknown) {
 			if (
 				error instanceof UserNotFoundError ||
-				(error instanceof Error && error.message === "Job role not found")
+				error instanceof JobRoleNotFoundError
 			) {
 				res.status(404).json({ message: error.message });
 				return;
 			}
 
 			if (error instanceof JobRoleNotOpenForApplicationsError) {
-				res.status(409).json({ message: error.message });
+				res.status(422).json({ message: error.message });
 				return;
 			}
 
@@ -52,14 +46,7 @@ export class JobApplicationController {
 	};
 
 	applyForRole = async (req: Request, res: Response): Promise<void> => {
-		const jobRoleId = Array.isArray(req.params.id)
-			? req.params.id[0]
-			: req.params.id;
-
-		if (!jobRoleId) {
-			res.status(400).json({ message: "Job role ID is required" });
-			return;
-		}
+		const { id: jobRoleId } = req.params as { id: string };
 
 		try {
 			const { userId, cvKey } = req.body as { userId: number; cvKey: string };
@@ -72,16 +59,18 @@ export class JobApplicationController {
 		} catch (error: unknown) {
 			if (
 				error instanceof UserNotFoundError ||
-				(error instanceof Error && error.message === "Job role not found")
+				error instanceof JobRoleNotFoundError
 			) {
 				res.status(404).json({ message: error.message });
 				return;
 			}
 
-			if (
-				error instanceof JobRoleNotOpenForApplicationsError ||
-				error instanceof ApplicationAlreadyExistsError
-			) {
+			if (error instanceof JobRoleNotOpenForApplicationsError) {
+				res.status(422).json({ message: error.message });
+				return;
+			}
+
+			if (error instanceof ApplicationAlreadyExistsError) {
 				res.status(409).json({ message: error.message });
 				return;
 			}

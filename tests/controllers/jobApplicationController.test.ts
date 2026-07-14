@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { JobApplicationController } from "../../src/controllers/jobApplicationController.js";
 import {
 	ApplicationAlreadyExistsError,
+	JobRoleNotFoundError,
 	JobRoleNotOpenForApplicationsError,
 } from "../../src/errors/jobApplicationErrors.js";
 import { UserNotFoundError } from "../../src/errors/userErrors.js";
@@ -68,14 +69,14 @@ describe("JobApplicationController", () => {
 			expect(mockStatus).toHaveBeenCalledWith(404);
 		});
 
-		it("returns 409 when job role is not open", async () => {
+		it("returns 422 when job role is not open", async () => {
 			mockCreateCvUploadUrl.mockRejectedValue(
 				new JobRoleNotOpenForApplicationsError(),
 			);
 
 			await controller.createCvUploadUrl(req, res);
 
-			expect(mockStatus).toHaveBeenCalledWith(409);
+			expect(mockStatus).toHaveBeenCalledWith(422);
 		});
 	});
 
@@ -100,19 +101,8 @@ describe("JobApplicationController", () => {
 			expect(mockStatus).toHaveBeenCalledWith(201);
 		});
 
-		it("returns 400 when job role id is missing", async () => {
-			req = { ...req, params: {} } as Request;
-
-			await controller.applyForRole(req, res);
-
-			expect(mockStatus).toHaveBeenCalledWith(400);
-			expect(mockJson).toHaveBeenCalledWith({
-				message: "Job role ID is required",
-			});
-		});
-
 		it("returns 404 when job role is not found", async () => {
-			mockApplyForRole.mockRejectedValue(new Error("Job role not found"));
+			mockApplyForRole.mockRejectedValue(new JobRoleNotFoundError());
 
 			await controller.applyForRole(req, res);
 
@@ -125,6 +115,16 @@ describe("JobApplicationController", () => {
 			await controller.applyForRole(req, res);
 
 			expect(mockStatus).toHaveBeenCalledWith(409);
+		});
+
+		it("returns 422 when job role is not open", async () => {
+			mockApplyForRole.mockRejectedValue(
+				new JobRoleNotOpenForApplicationsError(),
+			);
+
+			await controller.applyForRole(req, res);
+
+			expect(mockStatus).toHaveBeenCalledWith(422);
 		});
 
 		it("returns 500 on unexpected errors", async () => {

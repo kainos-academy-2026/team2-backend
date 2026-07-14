@@ -13,6 +13,7 @@ model User {
   email        String @unique
   passwordHash String
   role         String
+  jobApplications JobApplication[]
 }
 
 model JobRole {
@@ -29,6 +30,7 @@ model JobRole {
   numberOfOpenPositions Int  @default(0)
   capability   Capability    @relation(fields: [capabilityId], references: [capabilityId])
   band         Band          @relation(fields: [bandId], references: [nameId])
+  jobApplications JobApplication[]
 }
 
 model JobApplication {
@@ -38,6 +40,8 @@ model JobApplication {
   cvUrl         String
   status        String
   createdAt     DateTime @default(now())
+  jobRole       JobRole  @relation(fields: [jobRoleId], references: [jobRoleId])
+  user          User     @relation(fields: [userId], references: [id])
 
   @@unique([jobRoleId, userId])
 }

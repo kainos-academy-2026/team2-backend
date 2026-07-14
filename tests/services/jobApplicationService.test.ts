@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	ApplicationAlreadyExistsError,
+	JobRoleNotFoundError,
 	JobRoleNotOpenForApplicationsError,
 } from "../../src/errors/jobApplicationErrors.js";
 import { UserNotFoundError } from "../../src/errors/userErrors.js";
@@ -126,7 +127,7 @@ describe("JobApplicationService", () => {
 					userId: 11,
 					cvKey: "cvs/job-role-999/user-11/1-cv.pdf",
 				}),
-			).rejects.toThrow("Job role not found");
+			).rejects.toBeInstanceOf(JobRoleNotFoundError);
 		});
 
 		it("throws when role is closed or has no open positions", async () => {

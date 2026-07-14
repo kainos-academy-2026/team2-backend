@@ -5,6 +5,13 @@ export class JobRoleNotOpenForApplicationsError extends Error {
 	}
 }
 
+export class JobRoleNotFoundError extends Error {
+	constructor() {
+		super("Job role not found");
+		this.name = "JobRoleNotFoundError";
+	}
+}
+
 export class ApplicationAlreadyExistsError extends Error {
 	constructor() {
 		super("Application already exists for this role");

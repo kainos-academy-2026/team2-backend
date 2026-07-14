@@ -5,6 +5,7 @@ import type { UserDao } from "../daos/userDao.js";
 import type { JobApplicationResponseDto } from "../dtos/jobApplicationResponseDto.js";
 import {
 	ApplicationAlreadyExistsError,
+	JobRoleNotFoundError,
 	JobRoleNotOpenForApplicationsError,
 } from "../errors/jobApplicationErrors.js";
 import { UserNotFoundError } from "../errors/userErrors.js";
@@ -24,7 +25,7 @@ export class JobApplicationService {
 		jobRoleId: string;
 		userId: number;
 		fileName: string;
-		contentType: string;
+		contentType: "application/pdf";
 	}): Promise<{ cvKey: string; uploadUrl: string }> {
 		const jobRole = await this.getOpenJobRole(input.jobRoleId);
 		await this.ensureUserExists(input.userId);
@@ -57,10 +58,7 @@ export class JobApplicationService {
 
 			return this.jobApplicationMapper.toResponse(application);
 		} catch (error: unknown) {
-			if (
-				error instanceof Prisma.PrismaClientKnownRequestError &&
-				error.code === "P2002"
-			) {
+			if (this.isDuplicateApplicationError(error)) {
 				throw new ApplicationAlreadyExistsError();
 			}
 
@@ -68,12 +66,32 @@ export class JobApplicationService {
 		}
 	}
 
+	private isDuplicateApplicationError(error: unknown): boolean {
+		if (!(error instanceof Prisma.PrismaClientKnownRequestError)) {
+			return false;
+		}
+
+		if (error.code !== "P2002") {
+			return false;
+		}
+
+		const target = error.meta?.target;
+		if (!Array.isArray(target)) {
+			return true;
+		}
+
+		const targetFields = target.map((value) => String(value));
+		return (
+			targetFields.includes("jobRoleId") && targetFields.includes("userId")
+		);
+	}
+
 	private async getOpenJobRole(
 		jobRoleId: string,
 	): Promise<{ jobRoleId: number }> {
 		const jobRole = await this.jobRoleDao.findJobRoleById(jobRoleId);
 		if (!jobRole) {
-			throw new Error("Job role not found");
+			throw new JobRoleNotFoundError();
 		}
 
 		if (jobRole.status !== "OPEN" || jobRole.numberOfOpenPositions <= 0) {

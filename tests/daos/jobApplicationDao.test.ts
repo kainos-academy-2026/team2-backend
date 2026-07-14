@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { JobApplicationDao } from "../../src/daos/jobApplicationDao.js";
+import { JobApplicationMapper } from "../../src/mappers/jobApplicationMapper.js";
 
 vi.mock("../../src/lib/prisma.js", () => ({
 	prisma: {
@@ -16,7 +17,7 @@ describe("JobApplicationDao.create", () => {
 
 	beforeEach(() => {
 		vi.resetAllMocks();
-		dao = new JobApplicationDao();
+		dao = new JobApplicationDao(new JobApplicationMapper());
 	});
 
 	it("creates and returns a job application", async () => {

@@ -127,18 +127,6 @@ describe("JobRoleController.getById", () => {
 		expect(mockJson).toHaveBeenCalledWith({ message: "Job role not found" });
 	});
 
-	it("returns 400 when job role ID is missing", async () => {
-		req = { params: {} } as unknown as Request;
-
-		await controller.getById(req, res);
-
-		expect(mockStatus).toHaveBeenCalledWith(400);
-		expect(mockJson).toHaveBeenCalledWith({
-			message: "Job role ID is required",
-		});
-		expect(mockFindById).not.toHaveBeenCalled();
-	});
-
 	it("returns 500 when service throws", async () => {
 		mockFindById.mockRejectedValue(new Error("db error"));
 

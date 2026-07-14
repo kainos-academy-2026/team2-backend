@@ -20,12 +20,13 @@ const jobRoleRouter = Router();
 const jobRoleDao = new JobRoleDao();
 const jobRoleService = new JobRoleService(jobRoleDao, new JobRoleMapper());
 const jobRoleController = new JobRoleController(jobRoleService);
+const jobApplicationMapper = new JobApplicationMapper();
 const jobApplicationService = new JobApplicationService(
 	jobRoleDao,
 	new UserDao(),
-	new JobApplicationDao(),
+	new JobApplicationDao(jobApplicationMapper),
 	new S3CvStorageService(),
-	new JobApplicationMapper(),
+	jobApplicationMapper,
 );
 const jobApplicationController = new JobApplicationController(
 	jobApplicationService,

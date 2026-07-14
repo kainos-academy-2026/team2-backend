@@ -43,3 +43,9 @@
 - Summarize what changed in a concise way.
 - Report the result of `npm run lint:fix`, `npm run lint`, and `npm run test` after making changes.
 - Call out any remaining risks, gaps, or blockers.
+
+## Validation
+-must use zod with your middleware to validate.
+
+## Error messages
+-stop deciding responses based on error messages.

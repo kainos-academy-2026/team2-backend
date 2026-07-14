@@ -17,6 +17,7 @@ describe("validateParams", () => {
 		middleware(req, res, next);
 
 		expect(next).toHaveBeenCalledTimes(1);
+		expect(req.params).toEqual({ id: 42 });
 	});
 
 	it("returns 400 and first validation message when input is invalid", () => {
@@ -92,5 +93,6 @@ describe("validateParams", () => {
 		middleware(req, res, next);
 
 		expect(next).toHaveBeenCalledTimes(1);
+		expect(req.params).toEqual({ userId: "abc123", roleId: 5 });
 	});
 });
