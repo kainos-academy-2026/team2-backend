@@ -4,6 +4,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockFindAllOpen = vi.fn();
 const mockFindById = vi.fn();
+const mockGetBands = vi.fn();
+const mockGetCapabilities = vi.fn();
+const mockCreateJobRole = vi.fn();
 
 vi.mock("../../src/services/jobRoleService.js", () => {
 	return {
@@ -15,9 +18,29 @@ vi.mock("../../src/services/jobRoleService.js", () => {
 			async findById() {
 				return mockFindById();
 			}
+
+			async getBands() {
+				return mockGetBands();
+			}
+
+			async getCapabilities() {
+				return mockGetCapabilities();
+			}
+
+			async createJobRole() {
+				return mockCreateJobRole();
+			}
 		},
 	};
 });
+
+vi.mock("../../src/middleware/requireAdmin.js", () => ({
+	requireAdmin: vi.fn((_req, _res, next) => next()),
+}));
+
+vi.mock("../../src/middleware/requireAuth.js", () => ({
+	requireAuth: vi.fn((_req, _res, next) => next()),
+}));
 
 import jobRoleRouter from "../../src/routes/jobRoleRouter.js";
 
@@ -136,6 +159,169 @@ describe("GET /job-roles/:id", () => {
 		mockFindById.mockRejectedValue(new Error("db connection lost"));
 
 		const response = await request(app).get("/job-roles/1");
+
+		expect(response.status).toBe(500);
+		expect(response.body).toEqual({ message: "Internal server error" });
+	});
+});
+
+describe("GET /job-roles/bands", () => {
+	const app = express();
+	app.use(express.json());
+	app.use("/job-roles", jobRoleRouter);
+
+	beforeEach(() => {
+		vi.resetAllMocks();
+	});
+
+	describe("happy path", () => {
+		it("returns 200 with list of bands", async () => {
+			mockGetBands.mockResolvedValue(["Band 1", "Band 2"]);
+
+			const response = await request(app).get("/job-roles/bands");
+
+			expect(response.status).toBe(200);
+			expect(response.body).toEqual(["Band 1", "Band 2"]);
+		});
+	});
+
+	describe("unhappy path", () => {
+		it("returns 401 when not authenticated", async () => {
+			const { requireAuth } = await import(
+				"../../src/middleware/requireAuth.js"
+			);
+			vi.mocked(requireAuth).mockImplementationOnce((_req, res, _next) => {
+				res.status(401).json({ message: "Unauthorized" });
+			});
+
+			const response = await request(app).get("/job-roles/bands");
+
+			expect(response.status).toBe(401);
+			expect(response.body).toEqual({ message: "Unauthorized" });
+		});
+
+		it("returns 500 when service fails", async () => {
+			mockGetBands.mockRejectedValue(new Error("db error"));
+
+			const response = await request(app).get("/job-roles/bands");
+
+			expect(response.status).toBe(500);
+			expect(response.body).toEqual({ message: "Internal server error" });
+		});
+	});
+});
+
+describe("GET /job-roles/capabilities", () => {
+	const app = express();
+	app.use(express.json());
+	app.use("/job-roles", jobRoleRouter);
+
+	beforeEach(() => {
+		vi.resetAllMocks();
+	});
+
+	describe("happy path", () => {
+		it("returns 200 with list of capabilities", async () => {
+			mockGetCapabilities.mockResolvedValue(["Engineering", "Design"]);
+
+			const response = await request(app).get("/job-roles/capabilities");
+
+			expect(response.status).toBe(200);
+			expect(response.body).toEqual(["Engineering", "Design"]);
+		});
+	});
+
+	describe("unhappy path", () => {
+		it("returns 401 when not authenticated", async () => {
+			const { requireAuth } = await import(
+				"../../src/middleware/requireAuth.js"
+			);
+			vi.mocked(requireAuth).mockImplementationOnce((_req, res, _next) => {
+				res.status(401).json({ message: "Unauthorized" });
+			});
+
+			const response = await request(app).get("/job-roles/capabilities");
+
+			expect(response.status).toBe(401);
+			expect(response.body).toEqual({ message: "Unauthorized" });
+		});
+
+		it("returns 500 when service fails", async () => {
+			mockGetCapabilities.mockRejectedValue(new Error("db error"));
+
+			const response = await request(app).get("/job-roles/capabilities");
+
+			expect(response.status).toBe(500);
+			expect(response.body).toEqual({ message: "Internal server error" });
+		});
+	});
+});
+
+describe("POST /job-roles/add", () => {
+	const app = express();
+	app.use(express.json());
+	app.use("/job-roles", jobRoleRouter);
+
+	const validPayload = {
+		name: "Technical Architect",
+		location: "Belfast",
+		capability: "Engineering",
+		band: "B5",
+		closingDate: "2026-12-31",
+	};
+
+	beforeEach(() => {
+		vi.resetAllMocks();
+	});
+
+	it("returns 201 with created job role on success", async () => {
+		const created = {
+			jobRoleId: 1,
+			roleName: "Technical Architect",
+			location: "Belfast",
+			capability: "Engineering",
+			band: "B5",
+			closingDate: "2026-12-31T00:00:00.000Z",
+			status: "OPEN",
+			description: "",
+			responsibilities: [],
+			sharepointUrl: "",
+			numberOfOpenPositions: 0,
+		};
+		mockCreateJobRole.mockResolvedValue(created);
+
+		const response = await request(app)
+			.post("/job-roles/add")
+			.send(validPayload);
+
+		expect(response.status).toBe(201);
+		expect(response.body).toEqual(created);
+	});
+
+	it("returns 400 when required fields are missing", async () => {
+		const response = await request(app)
+			.post("/job-roles/add")
+			.send({ name: "Missing fields" });
+
+		expect(response.status).toBe(400);
+		expect(response.body).toHaveProperty("message");
+	});
+
+	it("returns 400 when closingDate format is invalid", async () => {
+		const response = await request(app)
+			.post("/job-roles/add")
+			.send({ ...validPayload, closingDate: "31-12-2026" });
+
+		expect(response.status).toBe(400);
+		expect(response.body).toHaveProperty("message");
+	});
+
+	it("returns 500 when service fails", async () => {
+		mockCreateJobRole.mockRejectedValue(new Error("unexpected error"));
+
+		const response = await request(app)
+			.post("/job-roles/add")
+			.send(validPayload);
 
 		expect(response.status).toBe(500);
 		expect(response.body).toEqual({ message: "Internal server error" });

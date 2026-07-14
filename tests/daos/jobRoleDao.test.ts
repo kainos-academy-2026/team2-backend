@@ -7,6 +7,15 @@ vi.mock("../../src/lib/prisma.js", () => ({
 		jobRole: {
 			findMany: vi.fn(),
 			findUnique: vi.fn(),
+			create: vi.fn(),
+		},
+		band: {
+			findMany: vi.fn(),
+			findFirst: vi.fn(),
+		},
+		capability: {
+			findMany: vi.fn(),
+			findFirst: vi.fn(),
 		},
 	},
 }));
@@ -119,5 +128,230 @@ describe("JobRoleDao.findJobRoleById", () => {
 		);
 
 		await expect(dao.findJobRoleById("5")).rejects.toThrow("db timeout");
+	});
+});
+
+describe("JobRoleDao.findBands", () => {
+	let dao: JobRoleDao;
+
+	beforeEach(() => {
+		vi.resetAllMocks();
+		dao = new JobRoleDao();
+	});
+
+	it("returns all bands from the database", async () => {
+		const bands = [
+			{ nameId: 1, bandName: "Band 1" },
+			{ nameId: 2, bandName: "Band 2" },
+		];
+		vi.mocked(prisma.band.findMany).mockResolvedValue(bands);
+
+		const result = await dao.findBands();
+
+		expect(vi.mocked(prisma.band.findMany)).toHaveBeenCalledWith({
+			select: { nameId: true, bandName: true },
+		});
+		expect(result).toEqual(bands);
+	});
+
+	it("returns empty array when no bands exist", async () => {
+		vi.mocked(prisma.band.findMany).mockResolvedValue([]);
+
+		const result = await dao.findBands();
+
+		expect(result).toEqual([]);
+	});
+
+	it("propagates database errors", async () => {
+		vi.mocked(prisma.band.findMany).mockRejectedValue(new Error("db error"));
+
+		await expect(dao.findBands()).rejects.toThrow("db error");
+	});
+});
+
+describe("JobRoleDao.findCapabilities", () => {
+	let dao: JobRoleDao;
+
+	beforeEach(() => {
+		vi.resetAllMocks();
+		dao = new JobRoleDao();
+	});
+
+	it("returns all capabilities from the database", async () => {
+		const capabilities = [
+			{ capabilityId: 1, capabilityName: "Engineering" },
+			{ capabilityId: 2, capabilityName: "Design" },
+		];
+		vi.mocked(prisma.capability.findMany).mockResolvedValue(capabilities);
+
+		const result = await dao.findCapabilities();
+
+		expect(vi.mocked(prisma.capability.findMany)).toHaveBeenCalledWith({
+			select: { capabilityId: true, capabilityName: true },
+		});
+		expect(result).toEqual(capabilities);
+	});
+
+	it("returns empty array when no capabilities exist", async () => {
+		vi.mocked(prisma.capability.findMany).mockResolvedValue([]);
+
+		const result = await dao.findCapabilities();
+
+		expect(result).toEqual([]);
+	});
+
+	it("propagates database errors", async () => {
+		vi.mocked(prisma.capability.findMany).mockRejectedValue(
+			new Error("db error"),
+		);
+
+		await expect(dao.findCapabilities()).rejects.toThrow("db error");
+	});
+});
+
+describe("JobRoleDao.findBandByName", () => {
+	let dao: JobRoleDao;
+
+	beforeEach(() => {
+		vi.resetAllMocks();
+		dao = new JobRoleDao();
+	});
+
+	it("returns band when found by name", async () => {
+		const band = { nameId: 1, bandName: "B5" };
+		vi.mocked(prisma.band.findFirst).mockResolvedValue(band);
+
+		const result = await dao.findBandByName("B5");
+
+		expect(vi.mocked(prisma.band.findFirst)).toHaveBeenCalledWith({
+			where: { bandName: "B5" },
+			select: { nameId: true, bandName: true },
+		});
+		expect(result).toEqual(band);
+	});
+
+	it("returns null when band is not found", async () => {
+		vi.mocked(prisma.band.findFirst).mockResolvedValue(null);
+
+		const result = await dao.findBandByName("Unknown");
+
+		expect(result).toBeNull();
+	});
+
+	it("propagates database errors", async () => {
+		vi.mocked(prisma.band.findFirst).mockRejectedValue(new Error("db error"));
+
+		await expect(dao.findBandByName("B5")).rejects.toThrow("db error");
+	});
+});
+
+describe("JobRoleDao.findCapabilityByName", () => {
+	let dao: JobRoleDao;
+
+	beforeEach(() => {
+		vi.resetAllMocks();
+		dao = new JobRoleDao();
+	});
+
+	it("returns capability when found by name", async () => {
+		const capability = { capabilityId: 1, capabilityName: "Engineering" };
+		vi.mocked(prisma.capability.findFirst).mockResolvedValue(capability);
+
+		const result = await dao.findCapabilityByName("Engineering");
+
+		expect(vi.mocked(prisma.capability.findFirst)).toHaveBeenCalledWith({
+			where: { capabilityName: "Engineering" },
+			select: { capabilityId: true, capabilityName: true },
+		});
+		expect(result).toEqual(capability);
+	});
+
+	it("returns null when capability is not found", async () => {
+		vi.mocked(prisma.capability.findFirst).mockResolvedValue(null);
+
+		const result = await dao.findCapabilityByName("Unknown");
+
+		expect(result).toBeNull();
+	});
+
+	it("propagates database errors", async () => {
+		vi.mocked(prisma.capability.findFirst).mockRejectedValue(
+			new Error("db error"),
+		);
+
+		await expect(dao.findCapabilityByName("Engineering")).rejects.toThrow(
+			"db error",
+		);
+	});
+});
+
+describe("JobRoleDao.createJobRole", () => {
+	let dao: JobRoleDao;
+
+	beforeEach(() => {
+		vi.resetAllMocks();
+		dao = new JobRoleDao();
+	});
+
+	it("creates a job role and returns it with includes", async () => {
+		const input = {
+			roleName: "Technical Architect",
+			location: "Belfast",
+			capabilityId: 1,
+			bandId: 2,
+			closingDate: new Date("2026-12-31"),
+			description: "Architect solutions",
+			sharepointUrl: "https://example.com/spec",
+			responsibilities: ["Design systems"],
+			numberOfOpenPositions: 2,
+		};
+		const created = makeJobRole({
+			jobRoleId: 10,
+			roleName: input.roleName,
+			location: input.location,
+			capabilityId: input.capabilityId,
+			bandId: input.bandId,
+		});
+		vi.mocked(prisma.jobRole.create).mockResolvedValue(created);
+
+		const result = await dao.createJobRole(input);
+
+		expect(vi.mocked(prisma.jobRole.create)).toHaveBeenCalledWith({
+			data: {
+				roleName: input.roleName,
+				location: input.location,
+				capabilityId: input.capabilityId,
+				bandId: input.bandId,
+				closingDate: input.closingDate,
+				status: "OPEN",
+				description: input.description,
+				sharepointUrl: input.sharepointUrl,
+				responsibilities: input.responsibilities,
+				numberOfOpenPositions: input.numberOfOpenPositions,
+			},
+			include: {
+				capability: true,
+				band: true,
+			},
+		});
+		expect(result).toEqual(created);
+	});
+
+	it("propagates database errors", async () => {
+		vi.mocked(prisma.jobRole.create).mockRejectedValue(new Error("db error"));
+
+		await expect(
+			dao.createJobRole({
+				roleName: "Architect",
+				location: "Belfast",
+				capabilityId: 1,
+				bandId: 2,
+				closingDate: new Date(),
+				description: "",
+				sharepointUrl: "",
+				responsibilities: [],
+				numberOfOpenPositions: 0,
+			}),
+		).rejects.toThrow("db error");
 	});
 });
