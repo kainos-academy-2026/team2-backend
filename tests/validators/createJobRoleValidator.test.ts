@@ -5,8 +5,8 @@ describe("createJobRoleSchema", () => {
 	const validPayload = {
 		name: "Technical Architect",
 		location: "Belfast",
-		capability: "Engineering",
-		band: "B5",
+		capabilityId: 1,
+		bandId: 2,
 		closingDate: "2026-12-31",
 	};
 
@@ -67,19 +67,37 @@ describe("createJobRoleSchema", () => {
 		expect(result.success).toBe(false);
 	});
 
-	it("fails when capability is missing", () => {
+	it("fails when capabilityId is missing", () => {
 		const result = createJobRoleSchema.safeParse({
 			...validPayload,
-			capability: undefined,
+			capabilityId: undefined,
 		});
 
 		expect(result.success).toBe(false);
 	});
 
-	it("fails when band is missing", () => {
+	it("fails when bandId is missing", () => {
 		const result = createJobRoleSchema.safeParse({
 			...validPayload,
-			band: undefined,
+			bandId: undefined,
+		});
+
+		expect(result.success).toBe(false);
+	});
+
+	it("fails when capabilityId is not a positive integer", () => {
+		const result = createJobRoleSchema.safeParse({
+			...validPayload,
+			capabilityId: 0,
+		});
+
+		expect(result.success).toBe(false);
+	});
+
+	it("fails when bandId is not a positive integer", () => {
+		const result = createJobRoleSchema.safeParse({
+			...validPayload,
+			bandId: -1,
 		});
 
 		expect(result.success).toBe(false);

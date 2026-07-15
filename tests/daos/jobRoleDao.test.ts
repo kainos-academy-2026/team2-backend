@@ -209,82 +209,6 @@ describe("JobRoleDao.findCapabilities", () => {
 	});
 });
 
-describe("JobRoleDao.findBandByName", () => {
-	let dao: JobRoleDao;
-
-	beforeEach(() => {
-		vi.resetAllMocks();
-		dao = new JobRoleDao();
-	});
-
-	it("returns band when found by name", async () => {
-		const band = { nameId: 1, bandName: "B5" };
-		vi.mocked(prisma.band.findFirst).mockResolvedValue(band);
-
-		const result = await dao.findBandByName("B5");
-
-		expect(vi.mocked(prisma.band.findFirst)).toHaveBeenCalledWith({
-			where: { bandName: "B5" },
-			select: { nameId: true, bandName: true },
-		});
-		expect(result).toEqual(band);
-	});
-
-	it("returns null when band is not found", async () => {
-		vi.mocked(prisma.band.findFirst).mockResolvedValue(null);
-
-		const result = await dao.findBandByName("Unknown");
-
-		expect(result).toBeNull();
-	});
-
-	it("propagates database errors", async () => {
-		vi.mocked(prisma.band.findFirst).mockRejectedValue(new Error("db error"));
-
-		await expect(dao.findBandByName("B5")).rejects.toThrow("db error");
-	});
-});
-
-describe("JobRoleDao.findCapabilityByName", () => {
-	let dao: JobRoleDao;
-
-	beforeEach(() => {
-		vi.resetAllMocks();
-		dao = new JobRoleDao();
-	});
-
-	it("returns capability when found by name", async () => {
-		const capability = { capabilityId: 1, capabilityName: "Engineering" };
-		vi.mocked(prisma.capability.findFirst).mockResolvedValue(capability);
-
-		const result = await dao.findCapabilityByName("Engineering");
-
-		expect(vi.mocked(prisma.capability.findFirst)).toHaveBeenCalledWith({
-			where: { capabilityName: "Engineering" },
-			select: { capabilityId: true, capabilityName: true },
-		});
-		expect(result).toEqual(capability);
-	});
-
-	it("returns null when capability is not found", async () => {
-		vi.mocked(prisma.capability.findFirst).mockResolvedValue(null);
-
-		const result = await dao.findCapabilityByName("Unknown");
-
-		expect(result).toBeNull();
-	});
-
-	it("propagates database errors", async () => {
-		vi.mocked(prisma.capability.findFirst).mockRejectedValue(
-			new Error("db error"),
-		);
-
-		await expect(dao.findCapabilityByName("Engineering")).rejects.toThrow(
-			"db error",
-		);
-	});
-});
-
 describe("JobRoleDao.createJobRole", () => {
 	let dao: JobRoleDao;
 
@@ -293,7 +217,7 @@ describe("JobRoleDao.createJobRole", () => {
 		dao = new JobRoleDao();
 	});
 
-	it("creates a job role and returns it with includes", async () => {
+	it("creates a job role and returns it", async () => {
 		const input = {
 			roleName: "Technical Architect",
 			location: "Belfast",
@@ -328,10 +252,6 @@ describe("JobRoleDao.createJobRole", () => {
 				sharepointUrl: input.sharepointUrl,
 				responsibilities: input.responsibilities,
 				numberOfOpenPositions: input.numberOfOpenPositions,
-			},
-			include: {
-				capability: true,
-				band: true,
 			},
 		});
 		expect(result).toEqual(created);

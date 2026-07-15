@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { InvalidReferenceDataError } from "../../src/errors/jobRoleErrors.js";
 import { JobRoleMapper } from "../../src/mappers/jobRoleMapper.js";
 import { JobRoleService } from "../../src/services/jobRoleService.js";
 import { makeJobRole } from "../fixtures/jobRoleFixtures.js";
@@ -124,7 +125,7 @@ describe("JobRoleService.getBands", () => {
 		service = new JobRoleService(mockDao as never, new JobRoleMapper());
 	});
 
-	it("returns band names from the DAO", async () => {
+	it("returns band id/name options from the DAO", async () => {
 		mockFindBands.mockResolvedValue([
 			{ nameId: 1, bandName: "Band 1" },
 			{ nameId: 2, bandName: "Band 2" },
@@ -132,7 +133,10 @@ describe("JobRoleService.getBands", () => {
 
 		const result = await service.getBands();
 
-		expect(result).toEqual(["Band 1", "Band 2"]);
+		expect(result).toEqual([
+			{ id: 1, name: "Band 1" },
+			{ id: 2, name: "Band 2" },
+		]);
 	});
 
 	it("returns empty array when no bands exist", async () => {
@@ -163,7 +167,7 @@ describe("JobRoleService.getCapabilities", () => {
 		service = new JobRoleService(mockDao as never, new JobRoleMapper());
 	});
 
-	it("returns capability names from the DAO", async () => {
+	it("returns capability id/name options from the DAO", async () => {
 		mockFindCapabilities.mockResolvedValue([
 			{ capabilityId: 1, capabilityName: "Engineering" },
 			{ capabilityId: 2, capabilityName: "Design" },
@@ -171,7 +175,10 @@ describe("JobRoleService.getCapabilities", () => {
 
 		const result = await service.getCapabilities();
 
-		expect(result).toEqual(["Engineering", "Design"]);
+		expect(result).toEqual([
+			{ id: 1, name: "Engineering" },
+			{ id: 2, name: "Design" },
+		]);
 	});
 
 	it("returns empty array when no capabilities exist", async () => {
@@ -190,56 +197,53 @@ describe("JobRoleService.getCapabilities", () => {
 });
 
 describe("JobRoleService.createJobRole", () => {
-	const mockFindBandByName = vi.fn();
-	const mockFindCapabilityByName = vi.fn();
 	const mockCreateJobRole = vi.fn();
+	const mockFindCapabilities = vi.fn();
+	const mockFindBands = vi.fn();
+	const mockToCreateInput = vi.fn();
+	const mockToResponse = vi.fn();
 
 	let service: JobRoleService;
 
 	beforeEach(() => {
 		vi.resetAllMocks();
 		const mockDao = {
-			findBandByName: mockFindBandByName,
-			findCapabilityByName: mockFindCapabilityByName,
 			createJobRole: mockCreateJobRole,
+			findCapabilities: mockFindCapabilities,
+			findBands: mockFindBands,
 		};
-		service = new JobRoleService(mockDao as never, new JobRoleMapper());
+		const mockMapper = {
+			toCreateInput: mockToCreateInput,
+			toResponse: mockToResponse,
+		};
+		service = new JobRoleService(mockDao as never, mockMapper as never);
 	});
 
 	it("creates a job role and returns the mapped DTO", async () => {
-		const band = { nameId: 2, bandName: "B5" };
-		const capability = { capabilityId: 1, capabilityName: "Engineering" };
+		const dto = {
+			name: "QA Engineer",
+			location: "Galway",
+			capabilityId: 1,
+			bandId: 2,
+			closingDate: "2026-08-31",
+		};
+		const mappedInput = {
+			roleName: "QA Engineer",
+			location: "Galway",
+			capabilityId: 1,
+			bandId: 2,
+			closingDate: new Date("2026-08-31"),
+			description: "",
+			sharepointUrl: "",
+			responsibilities: [],
+			numberOfOpenPositions: 0,
+		};
 		const createdRow = makeJobRole({
 			jobRoleId: 10,
-			capabilityId: capability.capabilityId,
-			bandId: band.nameId,
+			capabilityId: 1,
+			bandId: 2,
 		});
-
-		mockFindBandByName.mockResolvedValue(band);
-		mockFindCapabilityByName.mockResolvedValue(capability);
-		mockCreateJobRole.mockResolvedValue(createdRow);
-
-		const result = await service.createJobRole({
-			name: createdRow.roleName,
-			location: createdRow.location,
-			capability: capability.capabilityName,
-			band: band.bandName,
-			closingDate: createdRow.closingDate.toISOString().split("T")[0] as string,
-		});
-
-		expect(mockFindBandByName).toHaveBeenCalledWith(band.bandName);
-		expect(mockFindCapabilityByName).toHaveBeenCalledWith(
-			capability.capabilityName,
-		);
-		expect(mockCreateJobRole).toHaveBeenCalledWith(
-			expect.objectContaining({
-				capabilityId: capability.capabilityId,
-				bandId: band.nameId,
-				roleName: createdRow.roleName,
-				location: createdRow.location,
-			}),
-		);
-		expect(result).toEqual({
+		const mappedResponse = {
 			jobRoleId: createdRow.jobRoleId,
 			roleName: createdRow.roleName,
 			location: createdRow.location,
@@ -251,41 +255,53 @@ describe("JobRoleService.createJobRole", () => {
 			responsibilities: createdRow.responsibilities,
 			sharepointUrl: createdRow.sharepointUrl,
 			numberOfOpenPositions: createdRow.numberOfOpenPositions,
-		});
+		};
+
+		mockToCreateInput.mockReturnValue(mappedInput);
+		mockCreateJobRole.mockResolvedValue(createdRow);
+		mockFindCapabilities.mockResolvedValue([
+			{ capabilityId: 1, capabilityName: "Engineering" },
+		]);
+		mockFindBands.mockResolvedValue([{ nameId: 2, bandName: "Band 2" }]);
+		mockToResponse.mockReturnValue(mappedResponse);
+
+		const result = await service.createJobRole(dto);
+
+		expect(mockToCreateInput).toHaveBeenCalledWith(dto);
+		expect(mockCreateJobRole).toHaveBeenCalledWith(mappedInput);
+		expect(mockToResponse).toHaveBeenCalledWith(
+			createdRow,
+			"Engineering",
+			"Band 2",
+		);
+		expect(result).toEqual(mappedResponse);
 	});
 
-	it("throws BandNotFoundError when band does not exist", async () => {
-		const { BandNotFoundError } = await import(
-			"../../src/errors/jobRoleErrors.js"
-		);
-		mockFindBandByName.mockResolvedValue(null);
+	it("propagates DAO errors", async () => {
+		mockCreateJobRole.mockRejectedValue(new Error("db down"));
 
 		await expect(
 			service.createJobRole({
 				name: "Architect",
 				location: "Belfast",
-				capability: "Engineering",
-				band: "Unknown Band",
+				capabilityId: 1,
+				bandId: 2,
 				closingDate: "2026-12-31",
 			}),
-		).rejects.toThrow(BandNotFoundError);
+		).rejects.toThrow("db down");
 	});
 
-	it("throws CapabilityNotFoundError when capability does not exist", async () => {
-		const { CapabilityNotFoundError } = await import(
-			"../../src/errors/jobRoleErrors.js"
-		);
-		mockFindBandByName.mockResolvedValue({ nameId: 1, bandName: "B5" });
-		mockFindCapabilityByName.mockResolvedValue(null);
+	it("throws InvalidReferenceDataError for foreign-key violations", async () => {
+		mockCreateJobRole.mockRejectedValue({ code: "P2003" });
 
 		await expect(
 			service.createJobRole({
 				name: "Architect",
 				location: "Belfast",
-				capability: "Unknown Capability",
-				band: "B5",
+				capabilityId: 999,
+				bandId: 999,
 				closingDate: "2026-12-31",
 			}),
-		).rejects.toThrow(CapabilityNotFoundError);
+		).rejects.toBeInstanceOf(InvalidReferenceDataError);
 	});
 });

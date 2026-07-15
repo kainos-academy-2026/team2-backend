@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type TokenService from "../../src/interfaces/tokenService.js";
 import {
 	authenticateRequest,
+	requireAdmin,
 	requireAnyRole,
 } from "../../src/middleware/auth.js";
 import { Role } from "../../src/models/user.js";
@@ -115,6 +116,42 @@ describe("requireAnyRole", () => {
 		const next = vi.fn() as NextFunction;
 
 		middleware(req, res, next);
+
+		expect(status).toHaveBeenCalledWith(403);
+		expect(json).toHaveBeenCalledWith({ message: "Forbidden" });
+		expect(next).not.toHaveBeenCalled();
+	});
+});
+
+describe("requireAdmin", () => {
+	it("allows request when role is admin", () => {
+		const req = {} as Request;
+		const status = vi.fn();
+		const json = vi.fn();
+		status.mockReturnValue({ json });
+		const res = {
+			locals: { authUser: { role: Role.Admin } },
+			status,
+		} as unknown as Response;
+		const next = vi.fn() as NextFunction;
+
+		requireAdmin(req, res, next);
+
+		expect(next).toHaveBeenCalledTimes(1);
+		expect(status).not.toHaveBeenCalled();
+	});
+
+	it("returns 403 when role is not admin", () => {
+		const req = {} as Request;
+		const json = vi.fn();
+		const status = vi.fn().mockReturnValue({ json });
+		const res = {
+			locals: { authUser: { role: Role.User } },
+			status,
+		} as unknown as Response;
+		const next = vi.fn() as NextFunction;
+
+		requireAdmin(req, res, next);
 
 		expect(status).toHaveBeenCalledWith(403);
 		expect(json).toHaveBeenCalledWith({ message: "Forbidden" });

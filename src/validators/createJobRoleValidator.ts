@@ -3,8 +3,14 @@ import { z } from "zod";
 const createJobRoleSchema = z.object({
 	name: z.string().trim().min(1, { message: "Name is required" }),
 	location: z.string().trim().min(1, { message: "Location is required" }),
-	capability: z.string().trim().min(1, { message: "Capability is required" }),
-	band: z.string().trim().min(1, { message: "Band is required" }),
+	capabilityId: z
+		.number()
+		.int()
+		.positive({ message: "Capability ID must be a positive integer" }),
+	bandId: z
+		.number()
+		.int()
+		.positive({ message: "Band ID must be a positive integer" }),
 	closingDate: z
 		.string()
 		.date("Closing date must be a valid date in YYYY-MM-DD format"),

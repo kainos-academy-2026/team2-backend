@@ -44,24 +44,6 @@ export class JobRoleDao {
 		});
 	}
 
-	async findBandByName(
-		name: string,
-	): Promise<{ nameId: number; bandName: string } | null> {
-		return prisma.band.findFirst({
-			where: { bandName: name },
-			select: { nameId: true, bandName: true },
-		});
-	}
-
-	async findCapabilityByName(
-		name: string,
-	): Promise<{ capabilityId: number; capabilityName: string } | null> {
-		return prisma.capability.findFirst({
-			where: { capabilityName: name },
-			select: { capabilityId: true, capabilityName: true },
-		});
-	}
-
 	async createJobRole(input: CreateJobRoleInput): Promise<JobRole> {
 		return prisma.jobRole.create({
 			data: {
@@ -75,10 +57,6 @@ export class JobRoleDao {
 				sharepointUrl: input.sharepointUrl,
 				responsibilities: input.responsibilities,
 				numberOfOpenPositions: input.numberOfOpenPositions,
-			},
-			include: {
-				capability: true,
-				band: true,
 			},
 		});
 	}

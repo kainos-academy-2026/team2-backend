@@ -1,8 +1,8 @@
 export interface CreateJobRoleRequestDto {
 	name: string;
 	location: string;
-	capability: string;
-	band: string;
+	capabilityId: number;
+	bandId: number;
 	closingDate: string;
 	description?: string;
 	sharepointUrl?: string;

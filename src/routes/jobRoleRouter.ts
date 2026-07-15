@@ -3,10 +3,8 @@ import { Router } from "express";
 import { JobRoleController } from "../controllers/jobRoleController.js";
 import { JobRoleDao } from "../daos/jobRoleDao.js";
 import { JobRoleMapper } from "../mappers/jobRoleMapper.js";
-import { requireAdmin } from "../middleware/requireAdmin.js";
-import { requireAuth } from "../middleware/requireAuth.js";
+import { requireAdmin, requireAnyRole } from "../middleware/auth.js";
 import { validateBody } from "../middleware/validateBody.js";
-import { requireAnyRole } from "../middleware/auth.js";
 import { validateParams } from "../middleware/validateParams.js";
 import { Role } from "../models/user.js";
 import { JobRoleService } from "../services/jobRoleService.js";
@@ -33,14 +31,6 @@ jobRoleRouter.get("/", (req: Request, res: Response) =>
 	jobRoleController.getAll(req, res),
 );
 
-jobRoleRouter.get("/bands", requireAuth, (req: Request, res: Response) =>
-	jobRoleController.getBands(req, res),
-);
-
-jobRoleRouter.get("/capabilities", requireAuth, (req: Request, res: Response) =>
-	jobRoleController.getCapabilities(req, res),
-);
-
 jobRoleRouter.get(
 	"/:id",
 	validateParams(idParamSchema),
@@ -48,7 +38,7 @@ jobRoleRouter.get(
 );
 
 jobRoleRouter.post(
-	"/add",
+	"/",
 	requireAdmin,
 	validateBody(createJobRoleSchema),
 	(req: Request, res: Response) => jobRoleController.create(req, res),

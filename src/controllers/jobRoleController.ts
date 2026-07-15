@@ -1,9 +1,6 @@
 import type { Request, Response } from "express";
 import type { CreateJobRoleRequestDto } from "../dtos/createJobRoleRequestDto.js";
-import {
-	BandNotFoundError,
-	CapabilityNotFoundError,
-} from "../errors/jobRoleErrors.js";
+import { InvalidReferenceDataError } from "../errors/jobRoleErrors.js";
 import type { JobRoleService } from "../services/jobRoleService.js";
 
 export class JobRoleController {
@@ -37,24 +34,6 @@ export class JobRoleController {
 		}
 	}
 
-	async getBands(_req: Request, res: Response): Promise<void> {
-		try {
-			const bands = await this.jobRoleService.getBands();
-			res.status(200).json(bands);
-		} catch {
-			res.status(500).json({ message: "Internal server error" });
-		}
-	}
-
-	async getCapabilities(_req: Request, res: Response): Promise<void> {
-		try {
-			const capabilities = await this.jobRoleService.getCapabilities();
-			res.status(200).json(capabilities);
-		} catch {
-			res.status(500).json({ message: "Internal server error" });
-		}
-	}
-
 	async create(req: Request, res: Response): Promise<void> {
 		try {
 			const created = await this.jobRoleService.createJobRole(
@@ -62,10 +41,7 @@ export class JobRoleController {
 			);
 			res.status(201).json(created);
 		} catch (error: unknown) {
-			if (
-				error instanceof BandNotFoundError ||
-				error instanceof CapabilityNotFoundError
-			) {
+			if (error instanceof InvalidReferenceDataError) {
 				res.status(400).json({ message: "Invalid band or capability" });
 				return;
 			}
