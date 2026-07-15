@@ -1,10 +1,10 @@
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import type CvStorage from "../interfaces/cvStorage.js";
 import type {
-	CvUploadUrlInput,
-	CvUploadUrlResponse,
-} from "../interfaces/cvStorage.js";
+	CvUploadUrlInputDto,
+	CvUploadUrlResponseDto,
+} from "../dtos/cvUploadUrlDto.js";
+import type CvStorage from "../interfaces/cvStorage.js";
 
 export default class S3CvStorageService implements CvStorage {
 	private readonly s3Client: S3Client;
@@ -22,8 +22,8 @@ export default class S3CvStorageService implements CvStorage {
 	}
 
 	async createCvUploadUrl(
-		input: CvUploadUrlInput,
-	): Promise<CvUploadUrlResponse> {
+		input: CvUploadUrlInputDto,
+	): Promise<CvUploadUrlResponseDto> {
 		if (!this.bucketName) {
 			throw new Error("CV_S3_BUCKET must be set");
 		}

@@ -1,14 +1,11 @@
-export interface CvUploadUrlInput {
-	key: string;
-	contentType: string;
-}
-
-export interface CvUploadUrlResponse {
-	cvKey: string;
-	uploadUrl: string;
-}
+import type {
+	CvUploadUrlInputDto,
+	CvUploadUrlResponseDto,
+} from "../dtos/cvUploadUrlDto.js";
 
 export default interface CvStorage {
-	createCvUploadUrl(input: CvUploadUrlInput): Promise<CvUploadUrlResponse>;
+	createCvUploadUrl(
+		input: CvUploadUrlInputDto,
+	): Promise<CvUploadUrlResponseDto>;
 	getCvUrl(cvKey: string): string;
 }
