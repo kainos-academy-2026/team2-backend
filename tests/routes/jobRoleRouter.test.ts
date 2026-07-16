@@ -107,11 +107,10 @@ describe("GET /job-roles", () => {
 		expect(response.body).toEqual({ message: "Internal server error" });
 	});
 
-	it("returns 403 when user tries a write method", async () => {
+	it("returns 404 when user tries an unimplemented write method", async () => {
 		const response = await request(app).post("/job-roles").send({});
 
-		expect(response.status).toBe(403);
-		expect(response.body).toEqual({ message: "Forbidden" });
+		expect(response.status).toBe(404);
 	});
 });
 

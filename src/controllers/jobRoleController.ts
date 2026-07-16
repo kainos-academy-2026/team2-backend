@@ -16,14 +16,10 @@ export class JobRoleController {
 	}
 
 	async getById(req: Request, res: Response): Promise<void> {
-		const jobRoleId = req.params.id;
-		if (!jobRoleId) {
-			res.status(400).json({ message: "Job role ID is required" });
-			return;
-		}
+		const { id: jobRoleId } = req.params as { id: string };
 
 		try {
-			const jobRole = await this.jobRoleService.findById(jobRoleId as string);
+			const jobRole = await this.jobRoleService.findById(jobRoleId);
 			if (jobRole) {
 				res.status(200).json(jobRole);
 			} else {

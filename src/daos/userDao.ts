@@ -14,4 +14,10 @@ export class UserDao {
 			where: { email },
 		});
 	}
+
+	async findUserById(id: number): Promise<PrismaUser | null> {
+		return prisma.user.findUnique({
+			where: { id },
+		});
+	}
 }

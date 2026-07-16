@@ -13,5 +13,7 @@ export const validateParams =
 			return;
 		}
 
+		req.params = parsedRequest.data as typeof req.params;
+
 		next();
 	};
