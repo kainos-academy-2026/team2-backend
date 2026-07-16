@@ -4,7 +4,7 @@ import type { JobRoleResponseDto } from "../dtos/jobRoleResponseDto.js";
 import type {
 	BandReferenceDto,
 	CapabilityReferenceDto,
-} from "../dtos/referenceDataResponseDto.js";
+} from "../dtos/referenceDataResponseDto.ts";
 import { InvalidReferenceDataError } from "../errors/jobRoleErrors.js";
 import type { JobRoleMapper } from "../mappers/jobRoleMapper.js";
 

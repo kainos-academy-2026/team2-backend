@@ -27,18 +27,18 @@ jobRoleRouter.use((req, res, next) => {
 	requireAdmin(req, res, next);
 });
 
-jobRoleRouter.get("/", (req: Request, res: Response) =>
+jobRoleRouter.get("/job-roles", (req: Request, res: Response) =>
 	jobRoleController.getAll(req, res),
 );
 
 jobRoleRouter.get(
-	"/:id",
+	"/job-roles/:id",
 	validateParams(idParamSchema),
 	(req: Request, res: Response) => jobRoleController.getById(req, res),
 );
 
 jobRoleRouter.post(
-	"/",
+	"/job-roles",
 	requireAdmin,
 	validateBody(createJobRoleSchema),
 	(req: Request, res: Response) => jobRoleController.create(req, res),
