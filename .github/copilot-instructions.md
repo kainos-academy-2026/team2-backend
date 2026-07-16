@@ -61,6 +61,14 @@
 - Report any API verification performed for the changed endpoints.
 - Call out any remaining risks, gaps, or blockers.
 
+## Communication Style
+
+- Use a direct, action-first tone.
+- Do not use apologetic or emotionally cushioning phrases (for example: "You're right, I apologize", "Sorry about that", "Great catch", or similar).
+- Keep responses short and concrete: what changed, why, and validation status.
+- Avoid repetitive acknowledgement language; focus on execution.
+- If blocked, state the blocker plainly and provide the smallest clear decision needed from the user.
+
 ## When creating a pull request do the following:
  
 ## Add details:

@@ -6,8 +6,8 @@ describe("Authentication enforcement", () => {
 	it("redirects non-logged-in users on protected endpoint", async () => {
 		const response = await request(app).get("/job-roles");
 
-		expect(response.status).toBe(302);
-		expect(response.headers.location).toBe("/login");
+		expect(response.status).toBe(401);
+		expect(response.body).toEqual({ message: "Unauthorized" });
 	});
 
 	it("does not enforce auth on /register", async () => {

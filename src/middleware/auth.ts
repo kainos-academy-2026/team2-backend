@@ -80,7 +80,7 @@ export const authenticateRequest = (tokenService: TokenService) => {
 	): Promise<void> => {
 		const token = getBearerToken(req.header("authorization"));
 		if (!token) {
-			res.redirect(302, "/login");
+			res.status(401).json({ message: "Unauthorized" });
 			return;
 		}
 
@@ -88,14 +88,14 @@ export const authenticateRequest = (tokenService: TokenService) => {
 			const payload = await tokenService.verify(token);
 			const authUser = parsePayloadToUser(payload);
 			if (!authUser) {
-				res.redirect(302, "/login");
+				res.status(401).json({ message: "Unauthorized" });
 				return;
 			}
 
 			res.locals.authUser = authUser;
 			next();
 		} catch {
-			res.redirect(302, "/login");
+			res.status(401).json({ message: "Unauthorized" });
 		}
 	};
 };

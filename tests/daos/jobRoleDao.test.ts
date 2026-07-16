@@ -8,6 +8,7 @@ vi.mock("../../src/lib/prisma.js", () => ({
 			findMany: vi.fn(),
 			findUnique: vi.fn(),
 			create: vi.fn(),
+			delete: vi.fn(),
 		},
 		band: {
 			findMany: vi.fn(),
@@ -16,6 +17,10 @@ vi.mock("../../src/lib/prisma.js", () => ({
 		capability: {
 			findMany: vi.fn(),
 			findFirst: vi.fn(),
+			delete: vi.fn(),
+		},
+		jobApplication: {
+			count: vi.fn(),
 		},
 	},
 }));
@@ -273,5 +278,68 @@ describe("JobRoleDao.createJobRole", () => {
 				numberOfOpenPositions: 0,
 			}),
 		).rejects.toThrow("db error");
+	});
+});
+
+describe("JobRoleDao.hasApplications", () => {
+	let dao: JobRoleDao;
+
+	beforeEach(() => {
+		vi.resetAllMocks();
+		dao = new JobRoleDao();
+	});
+
+	it("returns true when job role has applications", async () => {
+		vi.mocked(prisma.jobApplication.count).mockResolvedValue(2);
+
+		const result = await dao.hasApplications(1);
+
+		expect(vi.mocked(prisma.jobApplication.count)).toHaveBeenCalledWith({
+			where: { jobRoleId: 1 },
+		});
+		expect(result).toBe(true);
+	});
+
+	it("returns false when job role has no applications", async () => {
+		vi.mocked(prisma.jobApplication.count).mockResolvedValue(0);
+
+		const result = await dao.hasApplications(1);
+
+		expect(result).toBe(false);
+	});
+
+	it("propagates database errors", async () => {
+		vi.mocked(prisma.jobApplication.count).mockRejectedValue(
+			new Error("db error"),
+		);
+
+		await expect(dao.hasApplications(1)).rejects.toThrow("db error");
+	});
+});
+
+describe("JobRoleDao.deleteJobRole", () => {
+	let dao: JobRoleDao;
+
+	beforeEach(() => {
+		vi.resetAllMocks();
+		dao = new JobRoleDao();
+	});
+
+	it("deletes a job role by ID", async () => {
+		vi.mocked(prisma.jobRole.delete).mockResolvedValue(
+			makeJobRole({ jobRoleId: 1, capabilityId: 1, bandId: 1 }),
+		);
+
+		await dao.deleteJobRole(1);
+
+		expect(vi.mocked(prisma.jobRole.delete)).toHaveBeenCalledWith({
+			where: { jobRoleId: 1 },
+		});
+	});
+
+	it("propagates database errors", async () => {
+		vi.mocked(prisma.jobRole.delete).mockRejectedValue(new Error("db error"));
+
+		await expect(dao.deleteJobRole(1)).rejects.toThrow("db error");
 	});
 });

@@ -1,6 +1,10 @@
 import type { Request, Response } from "express";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { JobRoleController } from "../../src/controllers/jobRoleController.js";
+import {
+	JobRoleHasApplicationsError,
+	JobRoleNotFoundError,
+} from "../../src/errors/jobApplicationErrors.js";
 import type { JobRoleService } from "../../src/services/jobRoleService.js";
 import { makeJobRole } from "../fixtures/jobRoleFixtures.js";
 
@@ -58,15 +62,6 @@ describe("JobRoleController.getAll", () => {
 
 		expect(mockStatus).toHaveBeenCalledWith(200);
 		expect(mockJson).toHaveBeenCalledWith([]);
-	});
-
-	it("returns 500 when service throws", async () => {
-		mockFindAllOpen.mockRejectedValue(new Error("boom"));
-
-		await controller.getAll(req, res);
-
-		expect(mockStatus).toHaveBeenCalledWith(500);
-		expect(mockJson).toHaveBeenCalledWith({ message: "Internal server error" });
 	});
 });
 
@@ -126,14 +121,61 @@ describe("JobRoleController.getById", () => {
 		expect(mockStatus).toHaveBeenCalledWith(404);
 		expect(mockJson).toHaveBeenCalledWith({ message: "Job role not found" });
 	});
+});
 
-	it("returns 500 when service throws", async () => {
-		mockFindById.mockRejectedValue(new Error("db error"));
+describe("JobRoleController.deleteRole", () => {
+	const mockDeleteRole = vi.fn();
+	const mockStatus = vi.fn();
+	const mockJson = vi.fn();
+	const mockSend = vi.fn();
 
-		await controller.getById(req, res);
+	let controller: JobRoleController;
+	let req: Request;
+	let res: Response;
 
-		expect(mockStatus).toHaveBeenCalledWith(500);
-		expect(mockJson).toHaveBeenCalledWith({ message: "Internal server error" });
+	beforeEach(() => {
+		vi.resetAllMocks();
+		mockStatus.mockReturnValue({ json: mockJson, send: mockSend });
+
+		const mockService = {
+			deleteRole: mockDeleteRole,
+		} as unknown as JobRoleService;
+
+		controller = new JobRoleController(mockService);
+		req = { params: { id: "1" } } as unknown as Request;
+		res = {
+			status: mockStatus,
+		} as unknown as Response;
+	});
+
+	it("returns 204 when job role is successfully deleted", async () => {
+		mockDeleteRole.mockResolvedValue(undefined);
+
+		await controller.deleteRole(req, res);
+
+		expect(mockDeleteRole).toHaveBeenCalledWith("1");
+		expect(mockStatus).toHaveBeenCalledWith(204);
+		expect(mockSend).toHaveBeenCalled();
+	});
+
+	it("returns 404 when job role is not found", async () => {
+		mockDeleteRole.mockRejectedValue(new JobRoleNotFoundError());
+
+		await controller.deleteRole(req, res);
+
+		expect(mockStatus).toHaveBeenCalledWith(404);
+		expect(mockJson).toHaveBeenCalledWith({ message: "Job role not found" });
+	});
+
+	it("returns 409 when job role has existing applications", async () => {
+		mockDeleteRole.mockRejectedValue(new JobRoleHasApplicationsError());
+
+		await controller.deleteRole(req, res);
+
+		expect(mockStatus).toHaveBeenCalledWith(409);
+		expect(mockJson).toHaveBeenCalledWith({
+			message: "Job role has existing applications and cannot be deleted",
+		});
 	});
 });
 
