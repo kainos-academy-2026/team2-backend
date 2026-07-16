@@ -47,7 +47,7 @@ describe("GET /job-roles", () => {
 		res.locals.authUser = { role: "user" };
 		next();
 	});
-	app.use("/job-roles", jobRoleRouter);
+	app.use(jobRoleRouter);
 
 	beforeEach(() => {
 		vi.resetAllMocks();
@@ -107,10 +107,10 @@ describe("GET /job-roles", () => {
 		expect(response.body).toEqual({ message: "Internal server error" });
 	});
 
-	it("returns 404 when user tries an unimplemented write method", async () => {
+	it("returns 403 when user tries an unimplemented write method", async () => {
 		const response = await request(app).post("/job-roles").send({});
 
-		expect(response.status).toBe(404);
+		expect(response.status).toBe(403);
 	});
 });
 
@@ -121,7 +121,7 @@ describe("GET /job-roles/:id", () => {
 		res.locals.authUser = { role: "user" };
 		next();
 	});
-	app.use("/job-roles", jobRoleRouter);
+	app.use(jobRoleRouter);
 
 	beforeEach(() => {
 		vi.resetAllMocks();
@@ -182,7 +182,7 @@ describe("POST /job-roles", () => {
 		res.locals.authUser = { role: "admin" };
 		next();
 	});
-	app.use("/job-roles", jobRoleRouter);
+	app.use(jobRoleRouter);
 
 	const validPayload = {
 		name: "Technical Architect",
@@ -253,7 +253,7 @@ describe("Write methods for admin", () => {
 		res.locals.authUser = { role: "admin" };
 		next();
 	});
-	app.use("/job-roles", jobRoleRouter);
+	app.use(jobRoleRouter);
 
 	it("does not return 403 for write methods", async () => {
 		const response = await request(app).post("/job-roles").send({});

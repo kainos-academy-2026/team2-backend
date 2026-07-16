@@ -24,7 +24,7 @@ import jobRoleRouter from "../../src/routes/jobRoleRouter.js";
 describe("Job application routes", () => {
 	const app = express();
 	app.use(express.json());
-	app.use("/job-roles", jobRoleRouter);
+	app.use(jobRoleRouter);
 
 	beforeEach(() => {
 		vi.resetAllMocks();

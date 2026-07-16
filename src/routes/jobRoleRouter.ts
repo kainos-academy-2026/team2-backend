@@ -52,7 +52,7 @@ jobRoleRouter.post(
 );
 
 jobRoleRouter.post(
-	"job-roles/:id/applications/upload-url",
+	"/job-roles/:id/applications/upload-url",
 	validateParams(idParamSchema),
 	validateBody(requestCvUploadUrlSchema),
 	jobApplicationController.createCvUploadUrl,
