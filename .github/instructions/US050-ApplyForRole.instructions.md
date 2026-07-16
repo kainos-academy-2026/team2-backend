@@ -1,3 +1,7 @@
+---
+applyTo: "**/src/*.ts,*.js" 
+---
+
 ### User Story ###
 As an applicant
 I want to be able to apply for a job role

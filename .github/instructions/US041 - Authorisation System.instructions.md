@@ -1,3 +1,7 @@
+---
+applyTo: "**/src/*.ts,*.js" 
+---
+
 # US041 - Authorisation System
 
 ## User Story
