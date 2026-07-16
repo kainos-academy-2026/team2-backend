@@ -7,6 +7,16 @@ vi.mock("../../src/lib/prisma.js", () => ({
 		jobRole: {
 			findMany: vi.fn(),
 			findUnique: vi.fn(),
+			create: vi.fn(),
+			delete: vi.fn(),
+		},
+		band: {
+			findMany: vi.fn(),
+			findFirst: vi.fn(),
+		},
+		capability: {
+			findMany: vi.fn(),
+			findFirst: vi.fn(),
 			delete: vi.fn(),
 		},
 		jobApplication: {
@@ -123,6 +133,151 @@ describe("JobRoleDao.findJobRoleById", () => {
 		);
 
 		await expect(dao.findJobRoleById("5")).rejects.toThrow("db timeout");
+	});
+});
+
+describe("JobRoleDao.findBands", () => {
+	let dao: JobRoleDao;
+
+	beforeEach(() => {
+		vi.resetAllMocks();
+		dao = new JobRoleDao();
+	});
+
+	it("returns all bands from the database", async () => {
+		const bands = [
+			{ nameId: 1, bandName: "Band 1" },
+			{ nameId: 2, bandName: "Band 2" },
+		];
+		vi.mocked(prisma.band.findMany).mockResolvedValue(bands);
+
+		const result = await dao.findBands();
+
+		expect(vi.mocked(prisma.band.findMany)).toHaveBeenCalledWith({
+			select: { nameId: true, bandName: true },
+		});
+		expect(result).toEqual(bands);
+	});
+
+	it("returns empty array when no bands exist", async () => {
+		vi.mocked(prisma.band.findMany).mockResolvedValue([]);
+
+		const result = await dao.findBands();
+
+		expect(result).toEqual([]);
+	});
+
+	it("propagates database errors", async () => {
+		vi.mocked(prisma.band.findMany).mockRejectedValue(new Error("db error"));
+
+		await expect(dao.findBands()).rejects.toThrow("db error");
+	});
+});
+
+describe("JobRoleDao.findCapabilities", () => {
+	let dao: JobRoleDao;
+
+	beforeEach(() => {
+		vi.resetAllMocks();
+		dao = new JobRoleDao();
+	});
+
+	it("returns all capabilities from the database", async () => {
+		const capabilities = [
+			{ capabilityId: 1, capabilityName: "Engineering" },
+			{ capabilityId: 2, capabilityName: "Design" },
+		];
+		vi.mocked(prisma.capability.findMany).mockResolvedValue(capabilities);
+
+		const result = await dao.findCapabilities();
+
+		expect(vi.mocked(prisma.capability.findMany)).toHaveBeenCalledWith({
+			select: { capabilityId: true, capabilityName: true },
+		});
+		expect(result).toEqual(capabilities);
+	});
+
+	it("returns empty array when no capabilities exist", async () => {
+		vi.mocked(prisma.capability.findMany).mockResolvedValue([]);
+
+		const result = await dao.findCapabilities();
+
+		expect(result).toEqual([]);
+	});
+
+	it("propagates database errors", async () => {
+		vi.mocked(prisma.capability.findMany).mockRejectedValue(
+			new Error("db error"),
+		);
+
+		await expect(dao.findCapabilities()).rejects.toThrow("db error");
+	});
+});
+
+describe("JobRoleDao.createJobRole", () => {
+	let dao: JobRoleDao;
+
+	beforeEach(() => {
+		vi.resetAllMocks();
+		dao = new JobRoleDao();
+	});
+
+	it("creates a job role and returns it", async () => {
+		const input = {
+			roleName: "Technical Architect",
+			location: "Belfast",
+			capabilityId: 1,
+			bandId: 2,
+			closingDate: new Date("2026-12-31"),
+			description: "Architect solutions",
+			sharepointUrl: "https://example.com/spec",
+			responsibilities: ["Design systems"],
+			numberOfOpenPositions: 2,
+		};
+		const created = makeJobRole({
+			jobRoleId: 10,
+			roleName: input.roleName,
+			location: input.location,
+			capabilityId: input.capabilityId,
+			bandId: input.bandId,
+		});
+		vi.mocked(prisma.jobRole.create).mockResolvedValue(created);
+
+		const result = await dao.createJobRole(input);
+
+		expect(vi.mocked(prisma.jobRole.create)).toHaveBeenCalledWith({
+			data: {
+				roleName: input.roleName,
+				location: input.location,
+				capabilityId: input.capabilityId,
+				bandId: input.bandId,
+				closingDate: input.closingDate,
+				status: "OPEN",
+				description: input.description,
+				sharepointUrl: input.sharepointUrl,
+				responsibilities: input.responsibilities,
+				numberOfOpenPositions: input.numberOfOpenPositions,
+			},
+		});
+		expect(result).toEqual(created);
+	});
+
+	it("propagates database errors", async () => {
+		vi.mocked(prisma.jobRole.create).mockRejectedValue(new Error("db error"));
+
+		await expect(
+			dao.createJobRole({
+				roleName: "Architect",
+				location: "Belfast",
+				capabilityId: 1,
+				bandId: 2,
+				closingDate: new Date(),
+				description: "",
+				sharepointUrl: "",
+				responsibilities: [],
+				numberOfOpenPositions: 0,
+			}),
+		).rejects.toThrow("db error");
 	});
 });
 

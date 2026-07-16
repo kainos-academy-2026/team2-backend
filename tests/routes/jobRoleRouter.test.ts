@@ -4,6 +4,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockFindAllOpen = vi.fn();
 const mockFindById = vi.fn();
+const mockGetBands = vi.fn();
+const mockGetCapabilities = vi.fn();
+const mockCreateJobRole = vi.fn();
 const mockDeleteRole = vi.fn();
 
 vi.mock("../../src/services/jobRoleService.js", () => {
@@ -17,12 +20,28 @@ vi.mock("../../src/services/jobRoleService.js", () => {
 				return mockFindById();
 			}
 
+			async getBands() {
+				return mockGetBands();
+			}
+
+			async getCapabilities() {
+				return mockGetCapabilities();
+			}
+
+			async createJobRole() {
+				return mockCreateJobRole();
+			}
+
 			async deleteRole() {
 				return mockDeleteRole();
 			}
 		},
 	};
 });
+
+vi.mock("../../src/middleware/requireAuth.js", () => ({
+	requireAuth: vi.fn((_req, _res, next) => next()),
+}));
 
 import jobRoleRouter from "../../src/routes/jobRoleRouter.js";
 
@@ -33,7 +52,7 @@ describe("GET /job-roles", () => {
 		res.locals.authUser = { role: "user" };
 		next();
 	});
-	app.use("/job-roles", jobRoleRouter);
+	app.use(jobRoleRouter);
 
 	beforeEach(() => {
 		vi.resetAllMocks();
@@ -92,10 +111,10 @@ describe("GET /job-roles", () => {
 		expect(response.status).toBe(500);
 	});
 
-	it("returns 404 when user tries an unimplemented write method", async () => {
+	it("returns 403 when user tries an unimplemented write method", async () => {
 		const response = await request(app).post("/job-roles").send({});
 
-		expect(response.status).toBe(404);
+		expect(response.status).toBe(403);
 	});
 });
 
@@ -106,7 +125,7 @@ describe("GET /job-roles/:id", () => {
 		res.locals.authUser = { role: "user" };
 		next();
 	});
-	app.use("/job-roles", jobRoleRouter);
+	app.use(jobRoleRouter);
 
 	beforeEach(() => {
 		vi.resetAllMocks();
@@ -159,6 +178,147 @@ describe("GET /job-roles/:id", () => {
 	});
 });
 
+describe("POST /job-roles", () => {
+	const app = express();
+	app.use(express.json());
+	app.use((_req, res, next) => {
+		res.locals.authUser = { role: "admin" };
+		next();
+	});
+	app.use(jobRoleRouter);
+
+	const validPayload = {
+		name: "Technical Architect",
+		location: "Belfast",
+		capabilityId: 1,
+		bandId: 2,
+		closingDate: "2026-12-31",
+	};
+
+	beforeEach(() => {
+		vi.resetAllMocks();
+	});
+
+	it("returns 201 with created job role on success", async () => {
+		const created = {
+			jobRoleId: 1,
+			roleName: "Technical Architect",
+			location: "Belfast",
+			capability: "Engineering",
+			band: "B5",
+			closingDate: "2026-12-31T00:00:00.000Z",
+			status: "OPEN",
+			description: "",
+			responsibilities: [],
+			sharepointUrl: "",
+			numberOfOpenPositions: 0,
+		};
+		mockCreateJobRole.mockResolvedValue(created);
+
+		const response = await request(app).post("/job-roles").send(validPayload);
+
+		expect(response.status).toBe(201);
+		expect(response.body).toEqual(created);
+	});
+
+	it("returns 400 when required fields are missing", async () => {
+		const response = await request(app)
+			.post("/job-roles")
+			.send({ name: "Missing fields" });
+
+		expect(response.status).toBe(400);
+		expect(response.body).toHaveProperty("message");
+	});
+
+	it("returns 400 when closingDate format is invalid", async () => {
+		const response = await request(app)
+			.post("/job-roles")
+			.send({ ...validPayload, closingDate: "31-12-2026" });
+
+		expect(response.status).toBe(400);
+		expect(response.body).toHaveProperty("message");
+	});
+
+	it("returns 500 when service fails", async () => {
+		mockCreateJobRole.mockRejectedValue(new Error("unexpected error"));
+
+		const response = await request(app).post("/job-roles").send(validPayload);
+
+		expect(response.status).toBe(500);
+	});
+});
+
+describe("POST /job-roles", () => {
+	const app = express();
+	app.use(express.json());
+	app.use((_req, res, next) => {
+		res.locals.authUser = { role: "admin" };
+		next();
+	});
+	app.use(jobRoleRouter);
+
+	const validPayload = {
+		name: "Technical Architect",
+		location: "Belfast",
+		capabilityId: 1,
+		bandId: 2,
+		closingDate: "2026-12-31",
+	};
+
+	beforeEach(() => {
+		vi.resetAllMocks();
+	});
+
+	it("returns 201 with created job role on success", async () => {
+		const created = {
+			jobRoleId: 1,
+			roleName: "Technical Architect",
+			location: "Belfast",
+			capability: "Engineering",
+			band: "B5",
+			closingDate: "2026-12-31T00:00:00.000Z",
+			status: "OPEN",
+			description: "",
+			responsibilities: [],
+			sharepointUrl: "",
+			numberOfOpenPositions: 0,
+		};
+		mockCreateJobRole.mockResolvedValue(created);
+
+		const response = await request(app).post("/job-roles").send(validPayload);
+
+		expect(response.status).toBe(201);
+		expect(response.body).toEqual(created);
+	});
+
+	it("returns 400 when required fields are missing", async () => {
+		const response = await request(app)
+			.post("/job-roles")
+			.send({ name: "Missing fields" });
+
+		expect(response.status).toBe(400);
+		expect(response.body).toHaveProperty("message");
+	});
+
+	it("returns 400 when closingDate format is invalid", async () => {
+		const response = await request(app)
+			.post("/job-roles")
+			.send({ ...validPayload, closingDate: "31-12-2026" });
+
+		expect(response.status).toBe(400);
+		expect(response.body).toHaveProperty("message");
+	});
+
+	it("returns 500 when service fails", async () => {
+		mockCreateJobRole.mockRejectedValue(new Error("unexpected error"));
+
+		const response = await request(app).post("/job-roles").send(validPayload);
+
+		expect(response.status).toBe(500);
+		expect(response.body).toEqual({ message: "Internal server error" });
+	});
+});
+
 describe("Write methods for admin", () => {
 	const app = express();
 	app.use(express.json());
@@ -166,10 +326,51 @@ describe("Write methods for admin", () => {
 		res.locals.authUser = { role: "admin" };
 		next();
 	});
-	app.use("/job-roles", jobRoleRouter);
+	app.use(jobRoleRouter);
 
 	it("does not return 403 for write methods", async () => {
 		const response = await request(app).post("/job-roles").send({});
+
+		expect(response.status).toBe(400);
+	});
+});
+
+describe("DELETE /job-roles/:id", () => {
+	const adminApp = express();
+	adminApp.use(express.json());
+	adminApp.use((_req, res, next) => {
+		res.locals.authUser = { role: "admin" };
+		next();
+	});
+	adminApp.use("/job-roles", jobRoleRouter);
+
+	const userApp = express();
+	userApp.use(express.json());
+	userApp.use((_req, res, next) => {
+		res.locals.authUser = { role: "user" };
+		next();
+	});
+	userApp.use("/job-roles", jobRoleRouter);
+
+	beforeEach(() => {
+		vi.resetAllMocks();
+	});
+
+	it("returns 204 when admin deletes an existing role", async () => {
+		mockDeleteRole.mockResolvedValue(undefined);
+
+		const response = await request(adminApp).delete("/job-roles/1");
+
+		expect(response.status).toBe(204);
+	});
+
+	it("returns 404 when job role does not exist", async () => {
+		const { JobRoleNotFoundError } = await import(
+			"../../src/errors/jobApplicationErrors.js"
+		);
+		mockDeleteRole.mockRejectedValue(new JobRoleNotFoundError());
+
+		const response = await request(adminApp).delete("/job-roles/999");
 
 		expect(response.status).toBe(404);
 	});
