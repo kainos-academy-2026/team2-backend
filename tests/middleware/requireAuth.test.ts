@@ -26,7 +26,7 @@ describe("requireAuth middleware", () => {
 			[{ role: "admin" }],
 		])("calls next with valid token", async (payload) => {
 			req = {
-				headers: { authorization: "Bearer valid.token" },
+				headers: { authorization: "bearer valid.token" },
 			} as unknown as Request;
 			vi.mocked(jose.jwtVerify).mockResolvedValue({
 				payload,
@@ -59,7 +59,7 @@ describe("requireAuth middleware", () => {
 
 		it("returns 401 when token verification fails", async () => {
 			req = {
-				headers: { authorization: "Bearer invalid.token" },
+				headers: { authorization: "bearer invalid.token" },
 			} as unknown as Request;
 			vi.mocked(jose.jwtVerify).mockRejectedValue(new Error("invalid token"));
 
@@ -73,7 +73,7 @@ describe("requireAuth middleware", () => {
 		it("returns 500 when JWT_SECRET_KEY is not set", async () => {
 			delete process.env.JWT_SECRET_KEY;
 			req = {
-				headers: { authorization: "Bearer valid.token" },
+				headers: { authorization: "bearer valid.token" },
 			} as unknown as Request;
 
 			await requireAuth(req, res, mockNext);
