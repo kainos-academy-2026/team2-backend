@@ -78,3 +78,8 @@ Include the ticket number or description in the PR title and description - e.g. 
  
 ### Testing done for this change (unit tests, integration tests)
 Confirm what tests you added and what paths were tested, even if already ran in the CI/CD pipeline.
+## Validation
+-must use zod with your middleware to validate.
+
+## Error messages
+-stop deciding responses based on error messages.
