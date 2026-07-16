@@ -319,6 +319,77 @@ describe("POST /job-roles", () => {
 	});
 });
 
+describe("POST /job-roles", () => {
+	const app = express();
+	app.use(express.json());
+	app.use((_req, res, next) => {
+		res.locals.authUser = { role: "admin" };
+		next();
+	});
+	app.use(jobRoleRouter);
+
+	const validPayload = {
+		name: "Technical Architect",
+		location: "Belfast",
+		capabilityId: 1,
+		bandId: 2,
+		closingDate: "2026-12-31",
+	};
+
+	beforeEach(() => {
+		vi.resetAllMocks();
+	});
+
+	it("returns 201 with created job role on success", async () => {
+		const created = {
+			jobRoleId: 1,
+			roleName: "Technical Architect",
+			location: "Belfast",
+			capability: "Engineering",
+			band: "B5",
+			closingDate: "2026-12-31T00:00:00.000Z",
+			status: "OPEN",
+			description: "",
+			responsibilities: [],
+			sharepointUrl: "",
+			numberOfOpenPositions: 0,
+		};
+		mockCreateJobRole.mockResolvedValue(created);
+
+		const response = await request(app).post("/job-roles").send(validPayload);
+
+		expect(response.status).toBe(201);
+		expect(response.body).toEqual(created);
+	});
+
+	it("returns 400 when required fields are missing", async () => {
+		const response = await request(app)
+			.post("/job-roles")
+			.send({ name: "Missing fields" });
+
+		expect(response.status).toBe(400);
+		expect(response.body).toHaveProperty("message");
+	});
+
+	it("returns 400 when closingDate format is invalid", async () => {
+		const response = await request(app)
+			.post("/job-roles")
+			.send({ ...validPayload, closingDate: "31-12-2026" });
+
+		expect(response.status).toBe(400);
+		expect(response.body).toHaveProperty("message");
+	});
+
+	it("returns 500 when service fails", async () => {
+		mockCreateJobRole.mockRejectedValue(new Error("unexpected error"));
+
+		const response = await request(app).post("/job-roles").send(validPayload);
+
+		expect(response.status).toBe(500);
+		expect(response.body).toEqual({ message: "Internal server error" });
+	});
+});
+
 describe("Write methods for admin", () => {
 	const app = express();
 	app.use(express.json());

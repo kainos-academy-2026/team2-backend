@@ -255,3 +255,80 @@ describe("JobRoleController.create", () => {
 		expect(mockJson).toHaveBeenCalledWith({ message: "Internal server error" });
 	});
 });
+
+describe("JobRoleController.create", () => {
+	const mockCreateJobRole = vi.fn();
+	const mockStatus = vi.fn();
+	const mockJson = vi.fn();
+
+	let controller: JobRoleController;
+	let req: Request;
+	let res: Response;
+
+	beforeEach(() => {
+		vi.resetAllMocks();
+		mockStatus.mockReturnValue({ json: mockJson });
+
+		const mockService = {
+			createJobRole: mockCreateJobRole,
+		} as unknown as JobRoleService;
+
+		controller = new JobRoleController(mockService);
+		req = {
+			body: {
+				name: "Technical Architect",
+				location: "Belfast",
+				capabilityId: 1,
+				bandId: 2,
+				closingDate: "2026-12-31",
+			},
+		} as unknown as Request;
+		res = { status: mockStatus } as unknown as Response;
+	});
+
+	it("returns 201 and the created job role on success", async () => {
+		const created = makeJobRole({ jobRoleId: 10 });
+		const dto = {
+			jobRoleId: 10,
+			roleName: created.roleName,
+			location: created.location,
+			capability: created.capability.capabilityName,
+			band: created.band.bandName,
+			closingDate: created.closingDate.toISOString(),
+			status: "OPEN",
+			description: created.description,
+			responsibilities: created.responsibilities,
+			sharepointUrl: created.sharepointUrl,
+			numberOfOpenPositions: created.numberOfOpenPositions,
+		};
+		mockCreateJobRole.mockResolvedValue(dto);
+
+		await controller.create(req, res);
+
+		expect(mockStatus).toHaveBeenCalledWith(201);
+		expect(mockJson).toHaveBeenCalledWith(dto);
+	});
+
+	it("returns 400 when reference data ids are invalid", async () => {
+		const { InvalidReferenceDataError } = await import(
+			"../../src/errors/jobRoleErrors.js"
+		);
+		mockCreateJobRole.mockRejectedValue(new InvalidReferenceDataError());
+
+		await controller.create(req, res);
+
+		expect(mockStatus).toHaveBeenCalledWith(400);
+		expect(mockJson).toHaveBeenCalledWith({
+			message: "Invalid band or capability",
+		});
+	});
+
+	it("returns 500 when service throws an unexpected error", async () => {
+		mockCreateJobRole.mockRejectedValue(new Error("unexpected"));
+
+		await controller.create(req, res);
+
+		expect(mockStatus).toHaveBeenCalledWith(500);
+		expect(mockJson).toHaveBeenCalledWith({ message: "Internal server error" });
+	});
+});
