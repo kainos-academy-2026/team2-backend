@@ -1,4 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+	JobRoleHasApplicationsError,
+	JobRoleNotFoundError,
+} from "../../src/errors/jobApplicationErrors.js";
 import { JobRoleMapper } from "../../src/mappers/jobRoleMapper.js";
 import { JobRoleService } from "../../src/services/jobRoleService.js";
 import { makeJobRole } from "../fixtures/jobRoleFixtures.js";
@@ -108,5 +112,72 @@ describe("JobRoleService.findById", () => {
 		mockFindJobRoleById.mockRejectedValue(new Error("db timeout"));
 
 		await expect(service.findById("1")).rejects.toThrow("db timeout");
+	});
+});
+
+describe("JobRoleService.deleteRole", () => {
+	const mockFindJobRoleById = vi.fn();
+	const mockHasApplications = vi.fn();
+	const mockDeleteJobRole = vi.fn();
+
+	let service: JobRoleService;
+
+	beforeEach(() => {
+		vi.resetAllMocks();
+		const mockDao = {
+			findJobRoleById: mockFindJobRoleById,
+			hasApplications: mockHasApplications,
+			deleteJobRole: mockDeleteJobRole,
+		};
+		service = new JobRoleService(mockDao as never, new JobRoleMapper());
+	});
+
+	it("deletes the job role when it exists and has no applications", async () => {
+		const role = makeJobRole({ jobRoleId: 1 });
+		mockFindJobRoleById.mockResolvedValue(role);
+		mockHasApplications.mockResolvedValue(false);
+		mockDeleteJobRole.mockResolvedValue(undefined);
+
+		await service.deleteRole("1");
+
+		expect(mockFindJobRoleById).toHaveBeenCalledWith("1");
+		expect(mockHasApplications).toHaveBeenCalledWith(role.jobRoleId);
+		expect(mockDeleteJobRole).toHaveBeenCalledWith(role.jobRoleId);
+	});
+
+	it("throws JobRoleNotFoundError when job role does not exist", async () => {
+		mockFindJobRoleById.mockResolvedValue(null);
+
+		await expect(service.deleteRole("999")).rejects.toThrow(
+			JobRoleNotFoundError,
+		);
+		expect(mockHasApplications).not.toHaveBeenCalled();
+		expect(mockDeleteJobRole).not.toHaveBeenCalled();
+	});
+
+	it("throws JobRoleHasApplicationsError when job role has applications", async () => {
+		const role = makeJobRole({ jobRoleId: 1 });
+		mockFindJobRoleById.mockResolvedValue(role);
+		mockHasApplications.mockResolvedValue(true);
+
+		await expect(service.deleteRole("1")).rejects.toThrow(
+			JobRoleHasApplicationsError,
+		);
+		expect(mockDeleteJobRole).not.toHaveBeenCalled();
+	});
+
+	it("propagates DAO errors from findJobRoleById", async () => {
+		mockFindJobRoleById.mockRejectedValue(new Error("db error"));
+
+		await expect(service.deleteRole("1")).rejects.toThrow("db error");
+	});
+
+	it("propagates DAO errors from deleteJobRole", async () => {
+		const role = makeJobRole({ jobRoleId: 1 });
+		mockFindJobRoleById.mockResolvedValue(role);
+		mockHasApplications.mockResolvedValue(false);
+		mockDeleteJobRole.mockRejectedValue(new Error("db error"));
+
+		await expect(service.deleteRole("1")).rejects.toThrow("db error");
 	});
 });

@@ -1,5 +1,9 @@
 import type { JobRoleDao } from "../daos/jobRoleDao.js";
 import type { JobRoleResponseDto } from "../dtos/jobRoleResponseDto.js";
+import {
+	JobRoleHasApplicationsError,
+	JobRoleNotFoundError,
+} from "../errors/jobApplicationErrors.js";
 import type { JobRoleMapper } from "../mappers/jobRoleMapper.js";
 
 export class JobRoleService {
@@ -22,5 +26,23 @@ export class JobRoleService {
 		}
 
 		return this.jobRoleMapper.toResponse(jobRole);
+	}
+
+	async deleteRole(jobRoleId: string): Promise<void> {
+		const jobRole = await this.jobRoleDao.findJobRoleById(jobRoleId);
+
+		if (!jobRole) {
+			throw new JobRoleNotFoundError();
+		}
+
+		const hasApplications = await this.jobRoleDao.hasApplications(
+			jobRole.jobRoleId,
+		);
+
+		if (hasApplications) {
+			throw new JobRoleHasApplicationsError();
+		}
+
+		await this.jobRoleDao.deleteJobRole(jobRole.jobRoleId);
 	}
 }

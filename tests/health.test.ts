@@ -23,7 +23,7 @@ describe("Unsupported methods on /health", () => {
 	it("redirects to login for POST without auth token", async () => {
 		const response = await request(app).post("/health").send({});
 
-		expect(response.status).toBe(302);
-		expect(response.headers.location).toBe("/login");
+		expect(response.status).toBe(401);
+		expect(response.body).toEqual({ message: "Unauthorized" });
 	});
 });

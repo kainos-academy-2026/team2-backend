@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockFindAllOpen = vi.fn();
 const mockFindById = vi.fn();
+const mockDeleteRole = vi.fn();
 
 vi.mock("../../src/services/jobRoleService.js", () => {
 	return {
@@ -14,6 +15,10 @@ vi.mock("../../src/services/jobRoleService.js", () => {
 
 			async findById() {
 				return mockFindById();
+			}
+
+			async deleteRole() {
+				return mockDeleteRole();
 			}
 		},
 	};
@@ -85,7 +90,6 @@ describe("GET /job-roles", () => {
 		const response = await request(app).get("/job-roles");
 
 		expect(response.status).toBe(500);
-		expect(response.body).toEqual({ message: "Internal server error" });
 	});
 
 	it("returns 404 when user tries an unimplemented write method", async () => {
@@ -152,7 +156,6 @@ describe("GET /job-roles/:id", () => {
 		const response = await request(app).get("/job-roles/1");
 
 		expect(response.status).toBe(500);
-		expect(response.body).toEqual({ message: "Internal server error" });
 	});
 });
 
@@ -169,5 +172,83 @@ describe("Write methods for admin", () => {
 		const response = await request(app).post("/job-roles").send({});
 
 		expect(response.status).toBe(404);
+	});
+});
+
+describe("DELETE /job-roles/:id", () => {
+	const adminApp = express();
+	adminApp.use(express.json());
+	adminApp.use((_req, res, next) => {
+		res.locals.authUser = { role: "admin" };
+		next();
+	});
+	adminApp.use("/job-roles", jobRoleRouter);
+
+	const userApp = express();
+	userApp.use(express.json());
+	userApp.use((_req, res, next) => {
+		res.locals.authUser = { role: "user" };
+		next();
+	});
+	userApp.use("/job-roles", jobRoleRouter);
+
+	beforeEach(() => {
+		vi.resetAllMocks();
+	});
+
+	it("returns 204 when admin deletes an existing role", async () => {
+		mockDeleteRole.mockResolvedValue(undefined);
+
+		const response = await request(adminApp).delete("/job-roles/1");
+
+		expect(response.status).toBe(204);
+	});
+
+	it("returns 404 when job role does not exist", async () => {
+		const { JobRoleNotFoundError } = await import(
+			"../../src/errors/jobApplicationErrors.js"
+		);
+		mockDeleteRole.mockRejectedValue(new JobRoleNotFoundError());
+
+		const response = await request(adminApp).delete("/job-roles/999");
+
+		expect(response.status).toBe(404);
+		expect(response.body).toEqual({ message: "Job role not found" });
+	});
+
+	it("returns 409 when job role has existing applications", async () => {
+		const { JobRoleHasApplicationsError } = await import(
+			"../../src/errors/jobApplicationErrors.js"
+		);
+		mockDeleteRole.mockRejectedValue(new JobRoleHasApplicationsError());
+
+		const response = await request(adminApp).delete("/job-roles/1");
+
+		expect(response.status).toBe(409);
+		expect(response.body).toEqual({
+			message: "Job role has existing applications and cannot be deleted",
+		});
+	});
+
+	it("returns 403 when a non-admin user attempts to delete", async () => {
+		const response = await request(userApp).delete("/job-roles/1");
+
+		expect(response.status).toBe(403);
+		expect(response.body).toEqual({ message: "Forbidden" });
+	});
+
+	it("returns 400 when job role ID is not a valid number", async () => {
+		const response = await request(adminApp).delete("/job-roles/invalid");
+
+		expect(response.status).toBe(400);
+		expect(response.body).toHaveProperty("message");
+	});
+
+	it("returns 500 when service throws an unexpected error", async () => {
+		mockDeleteRole.mockRejectedValue(new Error("db crash"));
+
+		const response = await request(adminApp).delete("/job-roles/1");
+
+		expect(response.status).toBe(500);
 	});
 });

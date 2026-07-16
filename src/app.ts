@@ -27,6 +27,7 @@ app.use(registerRouter);
 app.use(authenticateRequest(tokenService));
 app.use("/job-roles", jobRoleRouter);
 
-app.use((_err: Error, _req: Request, res: Response, _next: NextFunction) => {
+app.use((error: Error, _req: Request, res: Response, _next: NextFunction) => {
+	console.error(error.message);
 	res.status(500).json({ message: "Internal server error" });
 });

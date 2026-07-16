@@ -7,6 +7,7 @@ import { JobRoleDao } from "../daos/jobRoleDao.js";
 import { UserDao } from "../daos/userDao.js";
 import { JobApplicationMapper } from "../mappers/jobApplicationMapper.js";
 import { JobRoleMapper } from "../mappers/jobRoleMapper.js";
+import { requireAdmin } from "../middleware/auth.js";
 import { validateBody } from "../middleware/validateBody.js";
 import { validateParams } from "../middleware/validateParams.js";
 import { JobApplicationService } from "../services/jobApplicationService.js";
@@ -54,6 +55,13 @@ jobRoleRouter.post(
 	validateParams(idParamSchema),
 	validateBody(applyForRoleSchema),
 	jobApplicationController.applyForRole,
+);
+
+jobRoleRouter.delete(
+	"/:id",
+	requireAdmin,
+	validateParams(idParamSchema),
+	(req: Request, res: Response) => jobRoleController.deleteRole(req, res),
 );
 
 export default jobRoleRouter;
