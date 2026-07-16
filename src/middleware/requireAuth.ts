@@ -7,7 +7,7 @@ export const requireAuth = async (
 	next: NextFunction,
 ): Promise<void> => {
 	const authHeader = req.headers.authorization;
-	if (!authHeader?.startsWith("bearer ")) {
+	if (!authHeader?.toLowerCase().startsWith("bearer ")) {
 		res.status(401).json({ message: "Unauthorized" });
 		return;
 	}
