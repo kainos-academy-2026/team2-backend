@@ -1,19 +1,11 @@
-export interface JobRole {
-	jobRoleId: number;
+export interface CreateJobRoleInput {
 	roleName: string;
 	location: string;
 	capabilityId: number;
 	bandId: number;
 	closingDate: Date;
-	status: string;
 	description: string;
-	responsibilities: string[];
 	sharepointUrl: string;
+	responsibilities: string[];
 	numberOfOpenPositions: number;
-	capability?: {
-		capabilityName: string;
-	};
-	band?: {
-		bandName: string;
-	};
 }

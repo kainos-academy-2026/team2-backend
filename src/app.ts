@@ -7,6 +7,7 @@ import express, {
 import { authenticateRequest } from "./middleware/auth.js";
 import jobRoleRouter from "./routes/jobRoleRouter.js";
 import createLoginRouter from "./routes/loginRouter.js";
+import referenceDataRouter from "./routes/referenceDataRouter.js";
 import registerRouter from "./routes/register.js";
 import JoseTokenService from "./services/joseTokenService.js";
 
@@ -25,7 +26,8 @@ app.use(createLoginRouter(tokenService));
 app.use(registerRouter);
 
 app.use(authenticateRequest(tokenService));
-app.use("/job-roles", jobRoleRouter);
+app.use(referenceDataRouter);
+app.use(jobRoleRouter);
 
 app.use((_err: Error, _req: Request, res: Response, _next: NextFunction) => {
 	res.status(500).json({ message: "Internal server error" });

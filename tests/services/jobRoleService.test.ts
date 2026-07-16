@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { InvalidReferenceDataError } from "../../src/errors/jobRoleErrors.js";
 import { JobRoleMapper } from "../../src/mappers/jobRoleMapper.js";
 import { JobRoleService } from "../../src/services/jobRoleService.js";
 import { makeJobRole } from "../fixtures/jobRoleFixtures.js";
@@ -108,5 +109,199 @@ describe("JobRoleService.findById", () => {
 		mockFindJobRoleById.mockRejectedValue(new Error("db timeout"));
 
 		await expect(service.findById("1")).rejects.toThrow("db timeout");
+	});
+});
+
+describe("JobRoleService.getBands", () => {
+	const mockFindBands = vi.fn();
+
+	let service: JobRoleService;
+
+	beforeEach(() => {
+		vi.resetAllMocks();
+		const mockDao = {
+			findBands: mockFindBands,
+		};
+		service = new JobRoleService(mockDao as never, new JobRoleMapper());
+	});
+
+	it("returns band id/name options from the DAO", async () => {
+		mockFindBands.mockResolvedValue([
+			{ nameId: 1, bandName: "Band 1" },
+			{ nameId: 2, bandName: "Band 2" },
+		]);
+
+		const result = await service.getBands();
+
+		expect(result).toEqual([
+			{ id: 1, name: "Band 1" },
+			{ id: 2, name: "Band 2" },
+		]);
+	});
+
+	it("returns empty array when no bands exist", async () => {
+		mockFindBands.mockResolvedValue([]);
+
+		const result = await service.getBands();
+
+		expect(result).toEqual([]);
+	});
+
+	it("propagates DAO errors", async () => {
+		mockFindBands.mockRejectedValue(new Error("db down"));
+
+		await expect(service.getBands()).rejects.toThrow("db down");
+	});
+});
+
+describe("JobRoleService.getCapabilities", () => {
+	const mockFindCapabilities = vi.fn();
+
+	let service: JobRoleService;
+
+	beforeEach(() => {
+		vi.resetAllMocks();
+		const mockDao = {
+			findCapabilities: mockFindCapabilities,
+		};
+		service = new JobRoleService(mockDao as never, new JobRoleMapper());
+	});
+
+	it("returns capability id/name options from the DAO", async () => {
+		mockFindCapabilities.mockResolvedValue([
+			{ capabilityId: 1, capabilityName: "Engineering" },
+			{ capabilityId: 2, capabilityName: "Design" },
+		]);
+
+		const result = await service.getCapabilities();
+
+		expect(result).toEqual([
+			{ id: 1, name: "Engineering" },
+			{ id: 2, name: "Design" },
+		]);
+	});
+
+	it("returns empty array when no capabilities exist", async () => {
+		mockFindCapabilities.mockResolvedValue([]);
+
+		const result = await service.getCapabilities();
+
+		expect(result).toEqual([]);
+	});
+
+	it("propagates DAO errors", async () => {
+		mockFindCapabilities.mockRejectedValue(new Error("db down"));
+
+		await expect(service.getCapabilities()).rejects.toThrow("db down");
+	});
+});
+
+describe("JobRoleService.createJobRole", () => {
+	const mockCreateJobRole = vi.fn();
+	const mockFindCapabilities = vi.fn();
+	const mockFindBands = vi.fn();
+	const mockToCreateInput = vi.fn();
+	const mockToResponse = vi.fn();
+
+	let service: JobRoleService;
+
+	beforeEach(() => {
+		vi.resetAllMocks();
+		const mockDao = {
+			createJobRole: mockCreateJobRole,
+			findCapabilities: mockFindCapabilities,
+			findBands: mockFindBands,
+		};
+		const mockMapper = {
+			toCreateInput: mockToCreateInput,
+			toResponse: mockToResponse,
+		};
+		service = new JobRoleService(mockDao as never, mockMapper as never);
+	});
+
+	it("creates a job role and returns the mapped DTO", async () => {
+		const dto = {
+			name: "QA Engineer",
+			location: "Galway",
+			capabilityId: 1,
+			bandId: 2,
+			closingDate: "2026-08-31",
+		};
+		const mappedInput = {
+			roleName: "QA Engineer",
+			location: "Galway",
+			capabilityId: 1,
+			bandId: 2,
+			closingDate: new Date("2026-08-31"),
+			description: "",
+			sharepointUrl: "",
+			responsibilities: [],
+			numberOfOpenPositions: 0,
+		};
+		const createdRow = makeJobRole({
+			jobRoleId: 10,
+			capabilityId: 1,
+			bandId: 2,
+		});
+		const mappedResponse = {
+			jobRoleId: createdRow.jobRoleId,
+			roleName: createdRow.roleName,
+			location: createdRow.location,
+			capability: createdRow.capability.capabilityName,
+			band: createdRow.band.bandName,
+			closingDate: createdRow.closingDate.toISOString(),
+			status: createdRow.status,
+			description: createdRow.description,
+			responsibilities: createdRow.responsibilities,
+			sharepointUrl: createdRow.sharepointUrl,
+			numberOfOpenPositions: createdRow.numberOfOpenPositions,
+		};
+
+		mockToCreateInput.mockReturnValue(mappedInput);
+		mockCreateJobRole.mockResolvedValue(createdRow);
+		mockFindCapabilities.mockResolvedValue([
+			{ capabilityId: 1, capabilityName: "Engineering" },
+		]);
+		mockFindBands.mockResolvedValue([{ nameId: 2, bandName: "Band 2" }]);
+		mockToResponse.mockReturnValue(mappedResponse);
+
+		const result = await service.createJobRole(dto);
+
+		expect(mockToCreateInput).toHaveBeenCalledWith(dto);
+		expect(mockCreateJobRole).toHaveBeenCalledWith(mappedInput);
+		expect(mockToResponse).toHaveBeenCalledWith(
+			createdRow,
+			"Engineering",
+			"Band 2",
+		);
+		expect(result).toEqual(mappedResponse);
+	});
+
+	it("propagates DAO errors", async () => {
+		mockCreateJobRole.mockRejectedValue(new Error("db down"));
+
+		await expect(
+			service.createJobRole({
+				name: "Architect",
+				location: "Belfast",
+				capabilityId: 1,
+				bandId: 2,
+				closingDate: "2026-12-31",
+			}),
+		).rejects.toThrow("db down");
+	});
+
+	it("throws InvalidReferenceDataError for foreign-key violations", async () => {
+		mockCreateJobRole.mockRejectedValue({ code: "P2003" });
+
+		await expect(
+			service.createJobRole({
+				name: "Architect",
+				location: "Belfast",
+				capabilityId: 999,
+				bandId: 999,
+				closingDate: "2026-12-31",
+			}),
+		).rejects.toBeInstanceOf(InvalidReferenceDataError);
 	});
 });
