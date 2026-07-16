@@ -65,4 +65,11 @@ jobRoleRouter.post(
 	jobApplicationController.applyForRole,
 );
 
+jobRoleRouter.delete(
+	"/:id",
+	requireAdmin,
+	validateParams(idParamSchema),
+	(req: Request, res: Response) => jobRoleController.deleteRole(req, res),
+);
+
 export default jobRoleRouter;

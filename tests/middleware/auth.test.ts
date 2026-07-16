@@ -15,7 +15,7 @@ describe("authenticateRequest", () => {
 		vi.resetAllMocks();
 	});
 
-	it("redirects to /login when Authorization header is missing", async () => {
+	it("returns 401 when Authorization header is missing", async () => {
 		const middleware = authenticateRequest({
 			verify: mockVerify,
 			create: vi.fn(),
@@ -23,13 +23,15 @@ describe("authenticateRequest", () => {
 		const req = {
 			header: vi.fn().mockReturnValue(undefined),
 		} as unknown as Request;
-		const redirect = vi.fn();
-		const res = { redirect, locals: {} } as unknown as Response;
+		const json = vi.fn();
+		const status = vi.fn().mockReturnValue({ json });
+		const res = { status, locals: {} } as unknown as Response;
 		const next = vi.fn() as NextFunction;
 
 		await middleware(req, res, next);
 
-		expect(redirect).toHaveBeenCalledWith(302, "/login");
+		expect(status).toHaveBeenCalledWith(401);
+		expect(json).toHaveBeenCalledWith({ message: "Unauthorized" });
 		expect(next).not.toHaveBeenCalled();
 	});
 
@@ -65,7 +67,7 @@ describe("authenticateRequest", () => {
 		expect(next).toHaveBeenCalledTimes(1);
 	});
 
-	it("redirects to /login when token verification fails", async () => {
+	it("returns 401 when token verification fails", async () => {
 		mockVerify.mockRejectedValue(new Error("invalid token"));
 		const middleware = authenticateRequest({
 			verify: mockVerify,
@@ -74,13 +76,15 @@ describe("authenticateRequest", () => {
 		const req = {
 			header: vi.fn().mockReturnValue("Bearer bad-token"),
 		} as unknown as Request;
-		const redirect = vi.fn();
-		const res = { redirect, locals: {} } as unknown as Response;
+		const json = vi.fn();
+		const status = vi.fn().mockReturnValue({ json });
+		const res = { status, locals: {} } as unknown as Response;
 		const next = vi.fn() as NextFunction;
 
 		await middleware(req, res, next);
 
-		expect(redirect).toHaveBeenCalledWith(302, "/login");
+		expect(status).toHaveBeenCalledWith(401);
+		expect(json).toHaveBeenCalledWith({ message: "Unauthorized" });
 		expect(next).not.toHaveBeenCalled();
 	});
 });

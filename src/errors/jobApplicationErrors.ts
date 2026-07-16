@@ -18,3 +18,10 @@ export class ApplicationAlreadyExistsError extends Error {
 		this.name = "ApplicationAlreadyExistsError";
 	}
 }
+
+export class JobRoleHasApplicationsError extends Error {
+	constructor() {
+		super("Job role has existing applications and cannot be deleted");
+		this.name = "JobRoleHasApplicationsError";
+	}
+}

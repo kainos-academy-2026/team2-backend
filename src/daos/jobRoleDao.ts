@@ -60,4 +60,17 @@ export class JobRoleDao {
 			},
 		});
 	}
+
+	async hasApplications(jobRoleId: number): Promise<boolean> {
+		const count = await prisma.jobApplication.count({
+			where: { jobRoleId },
+		});
+		return count > 0;
+	}
+
+	async deleteJobRole(jobRoleId: number): Promise<void> {
+		await prisma.jobRole.delete({
+			where: { jobRoleId },
+		});
+	}
 }

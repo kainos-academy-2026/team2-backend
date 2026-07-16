@@ -5,6 +5,10 @@ import type {
 	BandReferenceDto,
 	CapabilityReferenceDto,
 } from "../dtos/referenceDataResponseDto.ts";
+import {
+	JobRoleHasApplicationsError,
+	JobRoleNotFoundError,
+} from "../errors/jobApplicationErrors.js";
 import { InvalidReferenceDataError } from "../errors/jobRoleErrors.js";
 import type { JobRoleMapper } from "../mappers/jobRoleMapper.js";
 
@@ -87,5 +91,23 @@ export class JobRoleService {
 
 			throw error;
 		}
+	}
+
+	async deleteRole(jobRoleId: string): Promise<void> {
+		const jobRole = await this.jobRoleDao.findJobRoleById(jobRoleId);
+
+		if (!jobRole) {
+			throw new JobRoleNotFoundError();
+		}
+
+		const hasApplications = await this.jobRoleDao.hasApplications(
+			jobRole.jobRoleId,
+		);
+
+		if (hasApplications) {
+			throw new JobRoleHasApplicationsError();
+		}
+
+		await this.jobRoleDao.deleteJobRole(jobRole.jobRoleId);
 	}
 }
