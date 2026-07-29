@@ -17,3 +17,11 @@ jobs:
 
       - name: Display message
         run: echo "Hello from GitHub Actions! 🎉"
+
+      - name: Build Docker image
+        run: |
+          docker build -t my-app:${{ github.sha }} .
+          docker build -t my-app:latest .
+
+      - name: Verify image was created
+        run: docker images | grep my-app
