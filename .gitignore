@@ -8,3 +8,7 @@ seed.js.map
 /dev.db
 coverage/
 docker/
+terraform.tfstate
+terraform.tfstate.*
+.terraform/
+.terraform.lock.hcl
