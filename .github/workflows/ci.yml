@@ -128,6 +128,7 @@ jobs:
   terraform:
     name: Terraform (plan/apply)
     runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     needs: [build]
     env:
       TF_IN_AUTOMATION: "true"
@@ -148,14 +149,44 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
+      - name: Validate Terraform/Azure secrets
+        shell: bash
+        run: |
+          required=(
+            ARM_CLIENT_ID
+            ARM_CLIENT_SECRET
+            ARM_TENANT_ID
+            ARM_SUBSCRIPTION_ID
+            TFSTATE_RG
+            TFSTATE_STORAGE
+            TFSTATE_CONTAINER
+          )
+
+          missing=0
+          for v in "${required[@]}"; do
+            if [[ -z "${!v}" ]]; then
+              echo "::error::Missing required secret/env: $v"
+              missing=1
+            fi
+          done
+
+          if [[ "$missing" -eq 1 ]]; then
+            echo "Terraform init cannot run until the missing values are set in repository secrets."
+            exit 1
+          fi
+
       - name: Terraform init (remote state)
         working-directory: my-infrastructure
         run: |
-          terraform init -input=false \
+          terraform init -input=false -no-color \
             -backend-config="resource_group_name=${TFSTATE_RG}" \
             -backend-config="storage_account_name=${TFSTATE_STORAGE}" \
             -backend-config="container_name=${TFSTATE_CONTAINER}" \
             -backend-config="key=${TFSTATE_KEY}" \
+            -backend-config="tenant_id=${ARM_TENANT_ID}" \
+            -backend-config="subscription_id=${ARM_SUBSCRIPTION_ID}" \
+            -backend-config="client_id=${ARM_CLIENT_ID}" \
+            -backend-config="client_secret=${ARM_CLIENT_SECRET}" \
             -backend-config="use_azuread_auth=true"
 
       - name: Terraform validate
