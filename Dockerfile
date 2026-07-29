@@ -6,7 +6,7 @@ RUN apt-get update \
 
 # Trust the corporate proxy (Zscaler/Kainos TLS inspection) root/intermediate CAs
 # so builds work behind the corporate proxy without disabling TLS verification.
-COPY docker/certs/corporate-ca-bundle.crt /usr/local/share/ca-certificates/corporate-ca-bundle.crt
+COPY docker/certs/*.crt /usr/local/share/ca-certificates/ || true
 RUN update-ca-certificates
 
 ENV NODE_EXTRA_CA_CERTS=/etc/ssl/certs/ca-certificates.crt

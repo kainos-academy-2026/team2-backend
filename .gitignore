@@ -7,7 +7,6 @@ seed.d.ts.map
 seed.js.map
 /dev.db
 coverage/
-docker/
 terraform.tfstate
 terraform.tfstate.*
 .terraform/
