@@ -41,6 +41,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Create placeholder corporate cert for CI build context
+        run: |
+          mkdir -p docker/certs
+          openssl req -x509 -newkey rsa:2048 -sha256 -days 365 -nodes \
+            -keyout /tmp/ci-placeholder-ca.key \
+            -out docker/certs/corporate-ca-bundle.crt \
+            -subj "/CN=ci-placeholder-ca"
+          rm -f /tmp/ci-placeholder-ca.key
+          
       - name: Build Docker image
         run: |
           docker build -t my-app:${{ github.sha }} .
