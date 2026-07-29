@@ -1,10 +1,11 @@
 variable "resource_group_name" {
   description = "Name of the Azure resource group"
   type        = string
-  default     = "team2-backend-rg"
+  default     = null
+  nullable    = true
 
   validation {
-    condition     = length(var.resource_group_name) >= 1 && length(var.resource_group_name) <= 90
+    condition     = var.resource_group_name == null || (length(var.resource_group_name) >= 1 && length(var.resource_group_name) <= 90)
     error_message = "Resource group name must be between 1 and 90 characters."
   }
 }
@@ -34,7 +35,7 @@ variable "environment" {
 variable "project_name" {
   description = "Project name used for resource naming and tagging"
   type        = string
-  default     = "my-project"
+  default     = "team2-backend"
 
   validation {
     condition     = can(regex("^[a-z0-9-]+$", var.project_name))
@@ -46,8 +47,6 @@ variable "tags" {
   description = "Common tags to apply to all resources"
   type        = map(string)
   default = {
-    ManagedBy   = "Terraform"
-    Environment = "dev"
-    Project     = "my-project"
+    ManagedBy = "Terraform"
   }
 }
