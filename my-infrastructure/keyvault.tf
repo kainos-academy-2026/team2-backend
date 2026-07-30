@@ -11,10 +11,10 @@ resource "azurerm_key_vault" "this" {
   tags = local.environment_tags
 }
 
-# Grant the identity running Terraform 'Key Vault Administrator' so secrets
-# can be managed via the Azure Portal without needing an access policy.
-resource "azurerm_role_assignment" "kv_deployer_admin" {
+# Grant the identity running Terraform 'Key Vault Secrets Officer' so secrets
+# can be created, read, and deleted via the Azure Portal.
+resource "azurerm_role_assignment" "kv_deployer_secrets_officer" {
   scope                = azurerm_key_vault.this.id
-  role_definition_name = "Key Vault Administrator"
+  role_definition_name = "Key Vault Secrets Officer"
   principal_id         = data.azurerm_client_config.current.object_id
 }
