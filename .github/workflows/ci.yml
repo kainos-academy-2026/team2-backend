@@ -4,7 +4,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
   push:
-    branches: ["**"]
+    branches: ["main"]
 
 jobs:
   lint:
@@ -67,6 +67,11 @@ jobs:
     name: Build Container Image
     runs-on: ubuntu-latest
     needs: [lint, test]
+    env:
+      ACR_REGISTRY: acraiacademy26.azurecr.io
+      ACR_IMAGE: acraiacademy26.azurecr.io/team2-backend
+    outputs:
+      image_pushed: ${{ steps.acr-push-check.outputs.image_pushed }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -85,10 +90,19 @@ jobs:
 
       - name: Set Docker image tags
         run: |
-          echo "ACR_REGISTRY=acraiacademy26.azurecr.io" >> "$GITHUB_ENV"
-          echo "ACR_IMAGE=acraiacademy26.azurecr.io/team2-backend" >> "$GITHUB_ENV"
           echo "IMAGE_TAG_SHA=${GITHUB_SHA::8}" >> "$GITHUB_ENV"
           echo "IMAGE_TAG_CI=ci-${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
+
+      - name: Determine whether ACR push is enabled
+        id: acr-push-check
+        run: |
+          if [[ "${GITHUB_REF}" == "refs/heads/main" && "${GITHUB_EVENT_NAME}" == "push" ]]; then
+            echo "image_pushed=true" >> "$GITHUB_OUTPUT"
+          elif [[ "${GITHUB_EVENT_NAME}" == "pull_request" && "${{ github.event.pull_request.head.repo.full_name }}" == "${GITHUB_REPOSITORY}" ]]; then
+            echo "image_pushed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "image_pushed=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Build Docker image
         run: |
@@ -128,8 +142,11 @@ jobs:
   terraform:
     name: Terraform (plan/apply)
     runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     needs: [build]
+    if: needs.build.outputs.image_pushed == 'true'
+    concurrency:
+      group: terraform-dev
+      cancel-in-progress: false
     env:
       TF_IN_AUTOMATION: "true"
       TF_VAR_environment: dev
@@ -138,9 +155,9 @@ jobs:
       ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
       ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      TFSTATE_RG: ${{ secrets.TFSTATE_RESOURCE_GROUP_NAME || secrets.TFSTATE_RG }}
-      TFSTATE_STORAGE: ${{ secrets.TFSTATE_STORAGE_ACCOUNT_NAME || secrets.TFSTATE_STORAGE }}
-      TFSTATE_CONTAINER: ${{ secrets.TFSTATE_CONTAINER_NAME || secrets.TFSTATE_CONTAINER }}
+      TFSTATE_RG: ${{ secrets.TFSTATE_RESOURCE_GROUP_NAME }}
+      TFSTATE_STORAGE: ${{ secrets.TFSTATE_STORAGE_ACCOUNT_NAME }}
+      TFSTATE_CONTAINER: ${{ secrets.TFSTATE_CONTAINER_NAME }}
       TFSTATE_KEY: team2-backend-dev.tfstate
     steps:
       - name: Checkout code
@@ -148,6 +165,8 @@ jobs:
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
 
       - name: Terraform init (remote state)
         working-directory: my-infrastructure
@@ -161,13 +180,17 @@ jobs:
 
       - name: Terraform validate
         working-directory: my-infrastructure
-        run: terraform validate
+        run: terraform validate -no-color
+
+      - name: Terraform fmt check
+        working-directory: my-infrastructure
+        run: terraform fmt -check -recursive
 
       - name: Terraform plan
         working-directory: my-infrastructure
-        run: terraform plan -input=false -out=tfplan
+        run: terraform plan -input=false -no-color -out=tfplan
 
       - name: Terraform apply (main branch)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         working-directory: my-infrastructure
-        run: terraform apply -input=false -auto-approve
+        run: terraform apply -input=false -no-color -auto-approve tfplan
