@@ -207,3 +207,9 @@ variable "backend_key_vault_secrets" {
   }))
   default = []
 }
+
+variable "acr_name" {
+  description = "Name of the existing Azure Container Registry"
+  type        = string
+  default     = "acraiacademy26"
+}
