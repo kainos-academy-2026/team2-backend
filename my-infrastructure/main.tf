@@ -44,21 +44,21 @@ module "resource_group" {
   tags                = local.environment_tags
 }
 
-data "azurerm_client_config" "current" {}
+//Azure key vault step 1
+# resource "azurerm_key_vault" "this" {
+#   name                          = local.final_key_vault_name
+#   location                      = var.location
+#   resource_group_name           = module.resource_group.name
+#   tenant_id                     = data.azurerm_client_config.current.tenant_id
+#   sku_name                      = "standard"
+#   enable_rbac_authorization     = true
+#   soft_delete_retention_days    = var.key_vault_soft_delete_retention_days
+#   purge_protection_enabled      = true
+#   public_network_access_enabled = true
+#   tags                          = local.environment_tags
+# }
 
-resource "azurerm_key_vault" "this" {
-  name                          = local.final_key_vault_name
-  location                      = var.location
-  resource_group_name           = module.resource_group.name
-  tenant_id                     = data.azurerm_client_config.current.tenant_id
-  sku_name                      = "standard"
-  enable_rbac_authorization     = true
-  soft_delete_retention_days    = var.key_vault_soft_delete_retention_days
-  purge_protection_enabled      = true
-  public_network_access_enabled = true
-  tags                          = local.environment_tags
-}
-
+//User Assigned Managed Identity step 2
 resource "azurerm_user_assigned_identity" "app" {
   name                = local.final_managed_identity_name
   location            = var.location
@@ -75,6 +75,8 @@ resource "azurerm_log_analytics_workspace" "container_apps" {
   tags                = local.environment_tags
 }
 
+
+//Container App Environment step 3
 resource "azurerm_container_app_environment" "platform" {
   name                       = local.final_container_app_environment_name
   location                   = var.location
@@ -83,13 +85,14 @@ resource "azurerm_container_app_environment" "platform" {
   tags                       = local.environment_tags
 }
 
+
+//Access to ACR and Key Vault (Role Assignments) step 4
 resource "azurerm_role_assignment" "app_key_vault_secrets_user" {
-  scope                = azurerm_key_vault.this.id
+  scope                = data.azurerm_key_vault.this.id
   role_definition_name = "Key Vault Secrets User"
   principal_id         = azurerm_user_assigned_identity.app.principal_id
 
   depends_on = [
-    azurerm_key_vault.this,
     azurerm_user_assigned_identity.app,
   ]
 }
@@ -106,6 +109,7 @@ resource "azurerm_role_assignment" "app_acr_pull" {
   ]
 }
 
+//Container App step 5
 resource "azurerm_container_app" "backend" {
   name                         = local.final_backend_container_app_name
   container_app_environment_id = azurerm_container_app_environment.platform.id

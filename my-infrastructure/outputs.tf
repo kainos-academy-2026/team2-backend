@@ -13,21 +13,6 @@ output "location" {
   value       = module.resource_group.location
 }
 
-output "key_vault_id" {
-  description = "Key Vault resource ID"
-  value       = azurerm_key_vault.this.id
-}
-
-output "key_vault_name" {
-  description = "Key Vault name"
-  value       = azurerm_key_vault.this.name
-}
-
-output "key_vault_uri" {
-  description = "Key Vault URI"
-  value       = azurerm_key_vault.this.vault_uri
-}
-
 output "managed_identity_id" {
   description = "Resource ID of the managed identity"
   value       = azurerm_user_assigned_identity.app.id
