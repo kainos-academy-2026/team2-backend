@@ -149,32 +149,6 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-      - name: Validate Terraform/Azure secrets
-        shell: bash
-        run: |
-          required=(
-            ARM_CLIENT_ID
-            ARM_CLIENT_SECRET
-            ARM_TENANT_ID
-            ARM_SUBSCRIPTION_ID
-            TFSTATE_RG
-            TFSTATE_STORAGE
-            TFSTATE_CONTAINER
-          )
-
-          missing=0
-          for v in "${required[@]}"; do
-            if [[ -z "${!v}" ]]; then
-              echo "::error::Missing required secret/env: $v"
-              missing=1
-            fi
-          done
-
-          if [[ "$missing" -eq 1 ]]; then
-            echo "Terraform init cannot run until the missing values are set in repository secrets."
-            exit 1
-          fi
-
       - name: Terraform init (remote state)
         working-directory: my-infrastructure
         run: |
