@@ -5,7 +5,7 @@ variable "resource_group_name" {
   nullable    = true
 
   validation {
-    condition     = var.resource_group_name == null || (length(var.resource_group_name) >= 1 && length(var.resource_group_name) <= 90)
+    condition     = var.resource_group_name == null || (try(length(var.resource_group_name), 0) >= 1 && try(length(var.resource_group_name), 0) <= 90)
     error_message = "Resource group name must be between 1 and 90 characters."
   }
 }
