@@ -9,7 +9,10 @@ terraform {
 
 provider "azurerm" {
   features {}
+  subscription_id = var.subscription_id
 }
+
+data "azurerm_client_config" "current" {}
 
 locals {
   name_prefix      = "${var.project_name}-${var.environment}"

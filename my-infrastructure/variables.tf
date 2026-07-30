@@ -50,3 +50,19 @@ variable "tags" {
     ManagedBy = "Terraform"
   }
 }
+
+variable "tenant_id" {
+  description = "Azure Active Directory tenant ID"
+  type        = string
+}
+
+variable "subscription_id" {
+  description = "Azure subscription ID"
+  type        = string
+}
+
+variable "acr_name" {
+  description = "Name of the existing Azure Container Registry"
+  type        = string
+  default     = "acraiacademy26"
+}
