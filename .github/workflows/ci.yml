@@ -168,6 +168,33 @@ jobs:
         with:
           terraform_version: 1.9.8
 
+      - name: Terraform env preflight
+        working-directory: my-infrastructure
+        run: |
+          required_vars=(
+            ARM_CLIENT_ID
+            ARM_CLIENT_SECRET
+            ARM_TENANT_ID
+            ARM_SUBSCRIPTION_ID
+            TFSTATE_RG
+            TFSTATE_STORAGE
+            TFSTATE_CONTAINER
+            TFSTATE_KEY
+          )
+
+          missing=0
+          for v in "${required_vars[@]}"; do
+            if [ -z "${!v:-}" ]; then
+              echo "Missing required environment variable: $v"
+              missing=1
+            fi
+          done
+
+          if [ "$missing" -ne 0 ]; then
+            echo "Terraform preflight failed: required backend/auth environment variables are missing."
+            exit 1
+          fi
+
       - name: Terraform init (remote state)
         working-directory: my-infrastructure
         run: |
