@@ -50,3 +50,9 @@ variable "tags" {
     ManagedBy = "Terraform"
   }
 }
+
+variable "acr_name" {
+  description = "Name of the existing Azure Container Registry"
+  type        = string
+  default     = "acraiacademy26"
+}

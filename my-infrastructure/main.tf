@@ -11,6 +11,8 @@ provider "azurerm" {
   features {}
 }
 
+data "azurerm_client_config" "current" {}
+
 locals {
   name_prefix      = "${var.project_name}-${var.environment}"
   computed_rg_name = "${local.name_prefix}-rg"
