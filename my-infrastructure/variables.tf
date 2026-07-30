@@ -51,32 +51,6 @@ variable "tags" {
   }
 }
 
-<<<<<<< HEAD
-=======
-variable "key_vault_name" {
-  description = "Optional explicit Key Vault name. If null, a name is computed."
-  type        = string
-  default     = null
-  nullable    = true
-
-  validation {
-    condition     = var.key_vault_name == null || can(regex("^[a-z0-9-]{3,24}$", var.key_vault_name))
-    error_message = "Key Vault name must be 3-24 chars, lowercase letters, numbers, or hyphens."
-  }
-}
-
-variable "key_vault_soft_delete_retention_days" {
-  description = "Soft delete retention for Key Vault (7-90 days)."
-  type        = number
-  default     = 90
-
-  validation {
-    condition     = var.key_vault_soft_delete_retention_days >= 7 && var.key_vault_soft_delete_retention_days <= 90
-    error_message = "Soft delete retention must be between 7 and 90 days."
-  }
-}
-
->>>>>>> b94f00d (part-5 task 1 in progress)
 variable "managed_identity_name" {
   description = "Optional explicit name for the User Assigned Managed Identity. If null, a name is computed."
   type        = string
@@ -224,10 +198,7 @@ variable "backend_secret_env_vars" {
   default     = {}
 }
 
-<<<<<<< HEAD
 //Azure key vault step 1
-=======
->>>>>>> b94f00d (part-5 task 1 in progress)
 variable "backend_key_vault_secrets" {
   description = "Backend Key Vault secrets to expose in Container App secret blocks."
   type = list(object({
