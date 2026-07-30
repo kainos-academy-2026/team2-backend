@@ -109,16 +109,10 @@ variable "container_app_environment_name" {
   }
 }
 
-variable "acr_resource_id" {
-  description = "Resource ID of the Azure Container Registry to grant AcrPull to. If null, AcrPull role assignment is skipped."
+variable "acr_resource_group_name" {
+  description = "Resource group name of the Azure Container Registry."
   type        = string
-  default     = null
-  nullable    = true
-
-  validation {
-    condition     = var.acr_resource_id == null || can(regex("^/subscriptions/.+/resourceGroups/.+/providers/Microsoft.ContainerRegistry/registries/.+$", var.acr_resource_id))
-    error_message = "acr_resource_id must be a valid Azure Container Registry resource ID."
-  }
+  default     = "rg-ai-academy-26"
 }
 
 variable "acr_login_server" {

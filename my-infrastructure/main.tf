@@ -70,6 +70,11 @@ resource "azurerm_container_app_environment" "platform" {
   tags                       = local.environment_tags
 }
 
+data "azurerm_container_registry" "this" {
+  name                = split(".", var.acr_login_server)[0]
+  resource_group_name = var.acr_resource_group_name
+}
+
 //Access to ACR and Key Vault (Role Assignments) step 4
 resource "azurerm_role_assignment" "app_key_vault_secrets_user" {
   scope                = azurerm_key_vault.this.id
@@ -83,9 +88,7 @@ resource "azurerm_role_assignment" "app_key_vault_secrets_user" {
 }
 
 resource "azurerm_role_assignment" "app_acr_pull" {
-  count = var.acr_resource_id == null ? 0 : 1
-
-  scope                = var.acr_resource_id
+  scope                = data.azurerm_container_registry.this.id
   role_definition_name = "AcrPull"
   principal_id         = azurerm_user_assigned_identity.app.principal_id
 
