@@ -12,9 +12,9 @@ provider "azurerm" {
 }
 
 locals {
-  name_prefix         = "${var.project_name}-${var.environment}"
-  computed_rg_name    = "${local.name_prefix}-rg"
-  final_rg_name       = coalesce(var.resource_group_name, local.computed_rg_name)
+  name_prefix      = "${var.project_name}-${var.environment}"
+  computed_rg_name = "${local.name_prefix}-rg"
+  final_rg_name    = coalesce(var.resource_group_name, local.computed_rg_name)
   environment_tags = merge(
     var.tags,
     {
