@@ -162,6 +162,11 @@ resource "azurerm_container_app" "backend" {
           secret_name = env.value
         }
       }
+
+      env {
+        name  = "CORS_ORIGIN"
+        value = "https://${local.final_frontend_container_app_name}.${azurerm_container_app_environment.platform.default_domain}"
+      }
     }
   }
 
@@ -217,6 +222,11 @@ resource "azurerm_container_app" "frontend" {
           name  = env.key
           value = env.value
         }
+      }
+
+      env {
+        name  = "BACKEND_URL"
+        value = "https://${azurerm_container_app.backend.latest_revision_fqdn}"
       }
     }
   }
