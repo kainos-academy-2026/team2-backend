@@ -75,6 +75,10 @@ resource "azurerm_postgresql_flexible_server" "app" {
   backup_retention_days         = var.postgres_backup_retention_days
   public_network_access_enabled = var.postgres_public_network_access_enabled
   tags                          = local.environment_tags
+
+  lifecycle {
+    ignore_changes = [zone]
+  }
 }
 
 resource "azurerm_postgresql_flexible_server_database" "app" {
