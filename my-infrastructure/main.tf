@@ -225,7 +225,7 @@ resource "azurerm_container_app" "frontend" {
       }
 
       env {
-        name  = "BACKEND_URL"
+        name = "BACKEND_URL"
         # stable internal FQDN — revision-suffix-free, known before apply
         value = "https://${local.final_backend_container_app_name}.internal.${azurerm_container_app_environment.platform.default_domain}"
       }
