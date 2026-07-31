@@ -248,18 +248,4 @@ jobs:
       - name: Terraform apply (main branch)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         working-directory: my-infrastructure
-        run: terraform apply -input=false -no-color -auto-approve tfplan
-
-      - name: Prisma migrate deploy
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
-          KV_NAME="${TF_VAR_project_name}-${TF_VAR_environment}-kv"
-          DATABASE_URL="$(az keyvault secret show --vault-name "$KV_NAME" --name database-url --query value -o tsv)"
-          if [ -z "$DATABASE_URL" ]; then
-            echo "DATABASE_URL secret value is empty or missing in Key Vault: $KV_NAME"
-            exit 1
-          fi
-
-          export DATABASE_URL
-          npm ci
-          npx prisma migrate deploy
+        run: terraform apply -input=false -no-color -auto-approve tfplan  
