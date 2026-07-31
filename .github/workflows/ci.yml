@@ -182,6 +182,13 @@ jobs:
         with:
           terraform_version: 1.9.8
 
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
       - name: Terraform env preflight
         working-directory: my-infrastructure
         run: |
@@ -219,6 +226,24 @@ jobs:
             -backend-config="key=${TFSTATE_KEY}" \
             -backend-config="use_azuread_auth=true"
 
+      - name: Import existing database-url secret (if present)
+        working-directory: my-infrastructure
+        run: |
+          KV_NAME="${TF_VAR_project_name}-${TF_VAR_environment}-kv"
+          SECRET_ID="$(az keyvault secret show --vault-name "$KV_NAME" --name database-url --query id -o tsv 2>/dev/null || true)"
+
+          if [ -z "$SECRET_ID" ]; then
+            echo "No existing database-url secret found in Key Vault ($KV_NAME). Terraform will create it."
+            exit 0
+          fi
+
+          if terraform state show azurerm_key_vault_secret.database_url >/dev/null 2>&1; then
+            echo "database-url secret is already managed in Terraform state."
+            exit 0
+          fi
+
+          terraform import -input=false -no-color azurerm_key_vault_secret.database_url "$SECRET_ID"
+
       - name: Terraform validate
         working-directory: my-infrastructure
         run: terraform validate -no-color
@@ -235,14 +260,6 @@ jobs:
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/frontendDeploy')
         working-directory: my-infrastructure
         run: terraform apply -input=false -no-color -auto-approve tfplan
-
-      - name: Azure login (for DB migration)
-        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/frontendDeploy')
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Prisma migrate deploy
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/frontendDeploy')
