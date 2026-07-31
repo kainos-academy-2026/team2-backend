@@ -25,6 +25,7 @@ locals {
   final_container_app_environment_name    = coalesce(var.container_app_environment_name, local.computed_container_app_environment_name)
   computed_backend_container_app_name     = "${local.name_prefix}-backend"
   final_backend_container_app_name        = coalesce(var.backend_container_app_name, local.computed_backend_container_app_name)
+  backend_container_app_resource_id       = "/subscriptions/${data.azurerm_client_config.current.subscription_id}/resourceGroups/${local.final_rg_name}/providers/Microsoft.App/containerApps/${local.final_backend_container_app_name}"
   backend_image                           = "${var.acr_login_server}/${var.backend_image_name}:${var.backend_image_tag}"
   environment_tags = merge(
     var.tags,
@@ -95,6 +96,11 @@ resource "azurerm_role_assignment" "app_acr_pull" {
   depends_on = [
     azurerm_user_assigned_identity.app,
   ]
+}
+
+import {
+  to = azurerm_container_app.backend
+  id = local.backend_container_app_resource_id
 }
 
 //Container App step 5
