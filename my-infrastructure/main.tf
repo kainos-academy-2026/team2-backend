@@ -189,7 +189,7 @@ resource "azurerm_container_app" "backend" {
   }
 
   ingress {
-    external_enabled = false
+    external_enabled = true
     target_port      = var.backend_container_port
     transport        = "auto"
 
@@ -289,8 +289,8 @@ resource "azurerm_container_app" "frontend" {
 
       env {
         name = "BACKEND_URL"
-        # stable internal FQDN — revision-suffix-free, known before apply
-        value = "https://${local.final_backend_container_app_name}.internal.${azurerm_container_app_environment.platform.default_domain}"
+        # stable public FQDN — revision-suffix-free, known before apply
+        value = "https://${local.final_backend_container_app_name}.${azurerm_container_app_environment.platform.default_domain}"
       }
     }
   }
