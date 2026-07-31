@@ -1,5 +1,7 @@
 name: CI
 
+permissions:
+  contents: read
 on:
   pull_request:
     types: [opened, synchronize, reopened]
@@ -151,6 +153,9 @@ jobs:
       TF_IN_AUTOMATION: "true"
       TF_VAR_environment: dev
       TF_VAR_project_name: team2-backend
+      TF_VAR_frontend_image_name: team2-frontend
+      TF_VAR_frontend_image_tag: latest
+      TF_VAR_frontend_container_port: "3000"
       ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
       ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
       ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
@@ -167,6 +172,11 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.9.8
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: '{"clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}","subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}","tenantId":"${{ secrets.AZURE_TENANT_ID }}","clientId":"${{ secrets.AZURE_CLIENT_ID }}"}'
 
       - name: Terraform env preflight
         working-directory: my-infrastructure
@@ -205,6 +215,24 @@ jobs:
             -backend-config="key=${TFSTATE_KEY}" \
             -backend-config="use_azuread_auth=true"
 
+      - name: Import existing database-url secret (if present)
+        working-directory: my-infrastructure
+        run: |
+          KV_NAME="${TF_VAR_project_name}-${TF_VAR_environment}-kv"
+          SECRET_ID="$(az keyvault secret show --vault-name "$KV_NAME" --name database-url --query id -o tsv 2>/dev/null || true)"
+
+          if [ -z "$SECRET_ID" ]; then
+            echo "No existing database-url secret found in Key Vault ($KV_NAME). Terraform will create it."
+            exit 0
+          fi
+
+          if terraform state show azurerm_key_vault_secret.database_url >/dev/null 2>&1; then
+            echo "database-url secret is already managed in Terraform state."
+            exit 0
+          fi
+
+          terraform import -input=false -no-color azurerm_key_vault_secret.database_url "$SECRET_ID"
+
       - name: Terraform validate
         working-directory: my-infrastructure
         run: terraform validate -no-color
@@ -220,4 +248,4 @@ jobs:
       - name: Terraform apply (main branch)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         working-directory: my-infrastructure
-        run: terraform apply -input=false -no-color -auto-approve tfplan
+        run: terraform apply -input=false -no-color -auto-approve tfplan  
