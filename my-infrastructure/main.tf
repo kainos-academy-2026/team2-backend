@@ -226,7 +226,8 @@ resource "azurerm_container_app" "frontend" {
 
       env {
         name  = "BACKEND_URL"
-        value = "https://${azurerm_container_app.backend.latest_revision_fqdn}"
+        # stable internal FQDN — revision-suffix-free, known before apply
+        value = "https://${local.final_backend_container_app_name}.internal.${azurerm_container_app_environment.platform.default_domain}"
       }
     }
   }
@@ -235,6 +236,7 @@ resource "azurerm_container_app" "frontend" {
 
   depends_on = [
     azurerm_container_app_environment.platform,
+    azurerm_container_app.backend,
     azurerm_role_assignment.app_acr_pull,
   ]
 }
