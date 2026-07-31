@@ -4,6 +4,10 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~> 4.0"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.0"
+    }
   }
 }
 
@@ -12,6 +16,15 @@ provider "azurerm" {
 }
 
 data "azurerm_client_config" "current" {}
+
+resource "random_id" "postgres_server_suffix" {
+  byte_length = 3
+}
+
+resource "random_password" "postgres_admin_password" {
+  length  = 24
+  special = false
+}
 
 locals {
   name_prefix                             = "${var.project_name}-${var.environment}"
@@ -27,8 +40,11 @@ locals {
   final_backend_container_app_name        = coalesce(var.backend_container_app_name, local.computed_backend_container_app_name)
   computed_frontend_container_app_name    = "${local.name_prefix}-frontend"
   final_frontend_container_app_name       = coalesce(var.frontend_container_app_name, local.computed_frontend_container_app_name)
+  computed_postgres_server_name           = "${local.name_prefix}-psql-${random_id.postgres_server_suffix.hex}"
+  final_postgres_server_name              = coalesce(var.postgres_server_name, local.computed_postgres_server_name)
   backend_image                           = "${var.acr_login_server}/${var.backend_image_name}:${var.backend_image_tag}"
   frontend_image                          = "${var.acr_login_server}/${var.frontend_image_name}:${var.frontend_image_tag}"
+  database_url                            = format("postgresql://%s:%s@%s:5432/%s?sslmode=require", var.postgres_admin_username, random_password.postgres_admin_password.result, azurerm_postgresql_flexible_server.app.fqdn, azurerm_postgresql_flexible_server_database.app.name)
   environment_tags = merge(
     var.tags,
     {
@@ -45,6 +61,48 @@ module "resource_group" {
   location            = var.location
   environment         = var.environment
   tags                = local.environment_tags
+}
+
+resource "azurerm_postgresql_flexible_server" "app" {
+  name                          = local.final_postgres_server_name
+  resource_group_name           = module.resource_group.name
+  location                      = var.location
+  version                       = var.postgres_version
+  administrator_login           = var.postgres_admin_username
+  administrator_password        = random_password.postgres_admin_password.result
+  storage_mb                    = var.postgres_storage_mb
+  sku_name                      = var.postgres_sku_name
+  backup_retention_days         = var.postgres_backup_retention_days
+  public_network_access_enabled = var.postgres_public_network_access_enabled
+  tags                          = local.environment_tags
+}
+
+resource "azurerm_postgresql_flexible_server_database" "app" {
+  name      = var.postgres_database_name
+  server_id = azurerm_postgresql_flexible_server.app.id
+  charset   = "UTF8"
+  collation = "en_US.utf8"
+}
+
+resource "azurerm_postgresql_flexible_server_firewall_rule" "allow_azure_services" {
+  count = var.postgres_allow_azure_services ? 1 : 0
+
+  name             = "allow-azure-services"
+  server_id        = azurerm_postgresql_flexible_server.app.id
+  start_ip_address = "0.0.0.0"
+  end_ip_address   = "0.0.0.0"
+}
+
+resource "azurerm_key_vault_secret" "database_url" {
+  name         = "database-url"
+  value        = local.database_url
+  key_vault_id = azurerm_key_vault.this.id
+  content_type = "DATABASE_URL"
+
+  depends_on = [
+    azurerm_postgresql_flexible_server_database.app,
+    azurerm_role_assignment.kv_deployer_secrets_officer,
+  ]
 }
 
 //User Assigned Managed Identity step 2
@@ -174,6 +232,7 @@ resource "azurerm_container_app" "backend" {
 
   depends_on = [
     azurerm_container_app_environment.platform,
+    azurerm_key_vault_secret.database_url,
     azurerm_role_assignment.app_key_vault_secrets_user,
     azurerm_role_assignment.app_acr_pull,
   ]

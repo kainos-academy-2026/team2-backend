@@ -235,3 +235,25 @@ jobs:
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/frontendDeploy')
         working-directory: my-infrastructure
         run: terraform apply -input=false -no-color -auto-approve tfplan
+
+      - name: Azure login (for DB migration)
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/frontendDeploy')
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Prisma migrate deploy
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/frontendDeploy')
+        run: |
+          KV_NAME="${TF_VAR_project_name}-${TF_VAR_environment}-kv"
+          DATABASE_URL="$(az keyvault secret show --vault-name "$KV_NAME" --name database-url --query value -o tsv)"
+          if [ -z "$DATABASE_URL" ]; then
+            echo "DATABASE_URL secret value is empty or missing in Key Vault: $KV_NAME"
+            exit 1
+          fi
+
+          export DATABASE_URL
+          npm ci
+          npx prisma migrate deploy

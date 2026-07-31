@@ -262,6 +262,96 @@ variable "backend_key_vault_secrets" {
   default = []
 }
 
+variable "postgres_server_name" {
+  description = "Optional explicit Azure Database for PostgreSQL Flexible Server name. If null, a unique name is computed."
+  type        = string
+  default     = null
+  nullable    = true
+
+  validation {
+    condition     = var.postgres_server_name == null || can(regex("^[a-z0-9-]{3,63}$", var.postgres_server_name))
+    error_message = "postgres_server_name must be 3-63 chars using lowercase letters, numbers, and hyphens."
+  }
+}
+
+variable "postgres_database_name" {
+  description = "Application database name created on the PostgreSQL server."
+  type        = string
+  default     = "jobs_db"
+
+  validation {
+    condition     = can(regex("^[a-zA-Z][a-zA-Z0-9_]{0,62}$", var.postgres_database_name))
+    error_message = "postgres_database_name must start with a letter and contain only letters, numbers, or underscores (max 63 chars)."
+  }
+}
+
+variable "postgres_admin_username" {
+  description = "Administrator username for Azure PostgreSQL Flexible Server."
+  type        = string
+  default     = "team2admin"
+
+  validation {
+    condition     = can(regex("^[a-zA-Z][a-zA-Z0-9_]{2,62}$", var.postgres_admin_username))
+    error_message = "postgres_admin_username must start with a letter and be 3-63 chars using letters, numbers, or underscores."
+  }
+}
+
+variable "postgres_version" {
+  description = "PostgreSQL major version for Azure PostgreSQL Flexible Server."
+  type        = string
+  default     = "15"
+
+  validation {
+    condition     = contains(["13", "14", "15", "16"], var.postgres_version)
+    error_message = "postgres_version must be one of: 13, 14, 15, 16."
+  }
+}
+
+variable "postgres_sku_name" {
+  description = "SKU for Azure PostgreSQL Flexible Server."
+  type        = string
+  default     = "B_Standard_B1ms"
+
+  validation {
+    condition     = length(var.postgres_sku_name) > 0
+    error_message = "postgres_sku_name must not be empty."
+  }
+}
+
+variable "postgres_storage_mb" {
+  description = "Storage size in MB for Azure PostgreSQL Flexible Server."
+  type        = number
+  default     = 32768
+
+  validation {
+    condition     = var.postgres_storage_mb >= 32768
+    error_message = "postgres_storage_mb must be at least 32768."
+  }
+}
+
+variable "postgres_backup_retention_days" {
+  description = "Backup retention period in days for Azure PostgreSQL Flexible Server."
+  type        = number
+  default     = 7
+
+  validation {
+    condition     = var.postgres_backup_retention_days >= 7 && var.postgres_backup_retention_days <= 35
+    error_message = "postgres_backup_retention_days must be between 7 and 35."
+  }
+}
+
+variable "postgres_public_network_access_enabled" {
+  description = "Enable public network access for Azure PostgreSQL Flexible Server."
+  type        = bool
+  default     = true
+}
+
+variable "postgres_allow_azure_services" {
+  description = "Allow Azure services access to the PostgreSQL server firewall using 0.0.0.0."
+  type        = bool
+  default     = true
+}
+
 variable "acr_name" {
   description = "Name of the existing Azure Container Registry"
   type        = string

@@ -77,3 +77,29 @@ output "frontend_container_app_url" {
   description = "Public URL for the frontend Container App"
   value       = "https://${azurerm_container_app.frontend.latest_revision_fqdn}"
 }
+
+output "postgresql_server_name" {
+  description = "Azure Database for PostgreSQL Flexible Server name"
+  value       = azurerm_postgresql_flexible_server.app.name
+}
+
+output "postgresql_server_fqdn" {
+  description = "FQDN for Azure Database for PostgreSQL Flexible Server"
+  value       = azurerm_postgresql_flexible_server.app.fqdn
+}
+
+output "postgresql_database_name" {
+  description = "Application database name created on Azure PostgreSQL"
+  value       = azurerm_postgresql_flexible_server_database.app.name
+}
+
+output "database_url_secret_name" {
+  description = "Key Vault secret name used for DATABASE_URL"
+  value       = azurerm_key_vault_secret.database_url.name
+}
+
+output "database_url_secret_id" {
+  description = "Key Vault secret ID used by the backend container app"
+  value       = azurerm_key_vault_secret.database_url.id
+  sensitive   = true
+}
