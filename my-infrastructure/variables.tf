@@ -138,6 +138,18 @@ variable "backend_container_app_name" {
   }
 }
 
+variable "frontend_container_app_name" {
+  description = "Optional explicit frontend Container App name. If null, a name is computed."
+  type        = string
+  default     = null
+  nullable    = true
+
+  validation {
+    condition     = var.frontend_container_app_name == null || can(regex("^[a-z0-9-]{2,32}$", var.frontend_container_app_name))
+    error_message = "frontend_container_app_name must be 2-32 chars using lowercase letters, numbers, and hyphens."
+  }
+}
+
 variable "backend_image_name" {
   description = "Repository/image name for the backend container image."
   type        = string
@@ -150,14 +162,38 @@ variable "backend_image_tag" {
   default     = "latest"
 }
 
+variable "frontend_image_name" {
+  description = "Repository/image name for the frontend container image."
+  type        = string
+  default     = "team2-frontend"
+}
+
+variable "frontend_image_tag" {
+  description = "Image tag for the frontend container image."
+  type        = string
+  default     = "latest"
+}
+
 variable "backend_container_port" {
   description = "Port exposed by the backend container."
   type        = number
   default     = 3001
 }
 
+variable "frontend_container_port" {
+  description = "Port exposed by the frontend container."
+  type        = number
+  default     = 3000
+}
+
 variable "backend_container_cpu" {
   description = "CPU allocation for the backend container."
+  type        = number
+  default     = 0.5
+}
+
+variable "frontend_container_cpu" {
+  description = "CPU allocation for the frontend container."
   type        = number
   default     = 0.5
 }
@@ -168,8 +204,20 @@ variable "backend_container_memory" {
   default     = "1Gi"
 }
 
+variable "frontend_container_memory" {
+  description = "Memory allocation for the frontend container."
+  type        = string
+  default     = "1Gi"
+}
+
 variable "backend_min_replicas" {
   description = "Minimum number of backend replicas."
+  type        = number
+  default     = 1
+}
+
+variable "frontend_min_replicas" {
+  description = "Minimum number of frontend replicas."
   type        = number
   default     = 1
 }
@@ -180,8 +228,20 @@ variable "backend_max_replicas" {
   default     = 2
 }
 
+variable "frontend_max_replicas" {
+  description = "Maximum number of frontend replicas."
+  type        = number
+  default     = 2
+}
+
 variable "backend_env_vars" {
   description = "Plain-text backend environment variables (name => value)."
+  type        = map(string)
+  default     = {}
+}
+
+variable "frontend_env_vars" {
+  description = "Plain-text frontend environment variables (name => value)."
   type        = map(string)
   default     = {}
 }

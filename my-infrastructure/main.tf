@@ -25,7 +25,10 @@ locals {
   final_container_app_environment_name    = coalesce(var.container_app_environment_name, local.computed_container_app_environment_name)
   computed_backend_container_app_name     = "${local.name_prefix}-backend"
   final_backend_container_app_name        = coalesce(var.backend_container_app_name, local.computed_backend_container_app_name)
+  computed_frontend_container_app_name    = "${local.name_prefix}-frontend"
+  final_frontend_container_app_name       = coalesce(var.frontend_container_app_name, local.computed_frontend_container_app_name)
   backend_image                           = "${var.acr_login_server}/${var.backend_image_name}:${var.backend_image_tag}"
+  frontend_image                          = "${var.acr_login_server}/${var.frontend_image_name}:${var.frontend_image_tag}"
   environment_tags = merge(
     var.tags,
     {
@@ -167,6 +170,61 @@ resource "azurerm_container_app" "backend" {
   depends_on = [
     azurerm_container_app_environment.platform,
     azurerm_role_assignment.app_key_vault_secrets_user,
+    azurerm_role_assignment.app_acr_pull,
+  ]
+}
+
+resource "azurerm_container_app" "frontend" {
+  name                         = local.final_frontend_container_app_name
+  container_app_environment_id = azurerm_container_app_environment.platform.id
+  resource_group_name          = module.resource_group.name
+  revision_mode                = "Single"
+
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.app.id]
+  }
+
+  registry {
+    server   = var.acr_login_server
+    identity = azurerm_user_assigned_identity.app.id
+  }
+
+  ingress {
+    external_enabled = true
+    target_port      = var.frontend_container_port
+    transport        = "auto"
+
+    traffic_weight {
+      latest_revision = true
+      percentage      = 100
+    }
+  }
+
+  template {
+    min_replicas = var.frontend_min_replicas
+    max_replicas = var.frontend_max_replicas
+
+    container {
+      name   = "frontend"
+      image  = local.frontend_image
+      cpu    = var.frontend_container_cpu
+      memory = var.frontend_container_memory
+
+      dynamic "env" {
+        for_each = var.frontend_env_vars
+        content {
+          name  = env.key
+          value = env.value
+        }
+      }
+    }
+  }
+
+  tags = local.environment_tags
+
+  depends_on = [
+    azurerm_container_app_environment.platform,
     azurerm_role_assignment.app_acr_pull,
   ]
 }

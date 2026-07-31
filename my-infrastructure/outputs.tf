@@ -67,3 +67,13 @@ output "backend_container_app_internal_fqdn" {
   description = "Internal FQDN for the backend Container App"
   value       = azurerm_container_app.backend.latest_revision_fqdn
 }
+
+output "frontend_container_app_name" {
+  description = "Frontend Container App name"
+  value       = azurerm_container_app.frontend.name
+}
+
+output "frontend_container_app_url" {
+  description = "Public URL for the frontend Container App"
+  value       = "https://${azurerm_container_app.frontend.latest_revision_fqdn}"
+}
