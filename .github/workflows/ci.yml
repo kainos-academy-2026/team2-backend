@@ -165,7 +165,6 @@ jobs:
       TF_VAR_frontend_image_name: team2-frontend
       TF_VAR_frontend_image_tag: latest
       TF_VAR_frontend_container_port: "3000"
-      BACKEND_CONTAINER_APP_RESOURCE_ID: /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/team2-backend-dev-rg/providers/Microsoft.App/containerApps/team2-backend-dev-backend
       ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
       ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
       ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
@@ -219,17 +218,6 @@ jobs:
             -backend-config="container_name=${TFSTATE_CONTAINER}" \
             -backend-config="key=${TFSTATE_KEY}" \
             -backend-config="use_azuread_auth=true"
-
-      - name: Import existing backend Container App into Terraform state
-        working-directory: my-infrastructure
-        run: |
-          if terraform state show azurerm_container_app.backend >/dev/null 2>&1; then
-            echo "Backend Container App already managed by Terraform state"
-          else
-            terraform import -input=false -no-color \
-              azurerm_container_app.backend \
-              "${BACKEND_CONTAINER_APP_RESOURCE_ID}"
-          fi
 
       - name: Terraform validate
         working-directory: my-infrastructure
